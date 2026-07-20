@@ -1,0 +1,62 @@
+## Ejemplo de VirtualHost para Apache (ajusta rutas y dominios)
+## Recomiendo usar DocumentRoot apuntando a `public/` si reorganizas la app.
+
+# HTTP -> redirige a HTTPS
+<VirtualHost *:80>
+    ServerName example.com
+    ServerAlias www.example.com
+    ServerAdmin webmaster@example.com
+
+    # Si usas DocumentRoot en la raíz del proyecto, asegúrate de proteger /app, /vendor y /logs
+    DocumentRoot "/var/www/finanzas_app/public"
+
+    <Directory "/var/www/finanzas_app/public">
+        AllowOverride All
+        Require all granted
+        Options -Indexes
+    </Directory>
+
+    # Redirigir todo a HTTPS
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R=301,L]
+
+    ErrorLog ${APACHE_LOG_DIR}/finanzas_app_error.log
+    CustomLog ${APACHE_LOG_DIR}/finanzas_app_access.log combined
+</VirtualHost>
+
+# HTTPS
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+    ServerName example.com
+    ServerAlias www.example.com
+    ServerAdmin webmaster@example.com
+
+    DocumentRoot "/var/www/finanzas_app/public"
+
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/your_cert.pem
+    SSLCertificateKeyFile /etc/ssl/private/your_key.pem
+    # SSLCertificateChainFile /etc/ssl/certs/chain.pem  # si aplica
+
+    <Directory "/var/www/finanzas_app/public">
+        AllowOverride All
+        Require all granted
+        Options -Indexes
+    </Directory>
+
+    # Cabeceras de seguridad recomendadas
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    ErrorLog ${APACHE_LOG_DIR}/finanzas_app_ssl_error.log
+    CustomLog ${APACHE_LOG_DIR}/finanzas_app_ssl_access.log combined
+</VirtualHost>
+</IfModule>
+
+# Notas:
+# - Ajusta ServerName/DocumentRoot y rutas de certificados.
+# - Si no puedes cambiar DocumentRoot, deja DocumentRoot en la raíz y usa el .htaccess creado para proteger carpetas.
+# - Revisa `BASE_PATH` en `app/config/app.php` si despliegas en un subdirectorio.

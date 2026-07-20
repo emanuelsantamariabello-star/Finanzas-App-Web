@@ -1,0 +1,31 @@
+# ======================================================
+# FINANZAS APP — .gitignore
+# ======================================================
+
+# 🔒 Credenciales y variables de entorno (NUNCA versionear)
+.env.php
+.env.local.php
+.env.local
+
+# 📦 Dependencias
+vendor/*
+!vendor/dompdf/
+!vendor/dompdf/**
+node_modules/
+
+# 🖥️ IDE y editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 📝 Logs y caché
+*.log
+tmp/
+cache/
+
+# 🔐 Archivos de sistema
+Thumbs.db
+.env

@@ -1,0 +1,675 @@
+/* =================================================
+   FINANZAS APP — BRAND SYSTEM
+   ================================================= */
+:root {
+
+    /* Colores marca */
+    --fa-blue-dark: #1E3A8A;
+    --fa-blue: #2563EB;
+
+    --fa-green: #22C55E;
+    --fa-green-light: #4ADE80;
+
+    /* Estados financieros */
+    --fa-income: #22C55E;
+    --fa-expense: #ef4444;
+    --fa-balance: #2563EB;
+
+}
+
+/* =========================
+   BOOTSTRAP PRIMARY OVERRIDE
+   ========================= */
+
+:root {
+    --bs-primary: var(--fa-blue);
+    --bs-primary-rgb: 37, 99, 235;
+}
+
+/* =================================================
+   VARIABLES GENERALES
+   ================================================= */
+:root {
+    --bg-main: #f8f9fa;
+    --bg-card: #ffffff;
+    --bg-table: #ffffff;
+
+    --text-main: #212529;
+    --text-muted: #6c757d;
+
+    --border-soft: #dee2e6;
+}
+
+/* =================================================
+   MODO OSCURO
+   ================================================= */
+[data-bs-theme="dark"] {
+    --bg-main: #1f2328;
+    --bg-card: #262b31;
+    --bg-table: #22262b;
+
+    --text-main: #e6edf3;
+    --text-muted: #9da7b1;
+
+    --border-soft: #2f353d;
+}
+
+/* =================================================
+   BASE
+   ================================================= */
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* =================================================
+   CARDS GENERALES
+   ================================================= */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 1rem;
+}
+
+/* =================================================
+   TABLAS
+   ================================================= */
+.table {
+    color: var(--text-main);
+}
+
+.table thead {
+    background-color: var(--bg-table);
+    color: var(--text-main);
+}
+
+[data-bs-theme="dark"] .table thead {
+    background-color: #2b3037;
+    color: #c9d1d9;
+}
+
+[data-bs-theme="dark"] .table-light {
+    --bs-table-bg: #2b3037;
+    --bs-table-color: #e6edf3;
+    --bs-table-border-color: var(--border-soft);
+}
+
+.table tbody tr {
+    border-color: var(--border-soft);
+    transition: background-color 0.15s ease;
+}
+
+[data-bs-theme="light"] .table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+[data-bs-theme="dark"] .table tbody tr:hover {
+    background-color: rgba(255,255,255,0.05);
+}
+
+/* =================================================
+   BOTONES (OSCURO)
+   ================================================= */
+[data-bs-theme="dark"] .btn-outline-secondary,
+[data-bs-theme="dark"] .btn-outline-primary,
+[data-bs-theme="dark"] .btn-outline-warning,
+[data-bs-theme="dark"] .btn-outline-danger {
+    border-color: var(--border-soft);
+    color: var(--text-main);
+}
+
+/* =================================================
+   TARJETAS RESUMEN
+   ================================================= */
+.summary-card {
+    padding: 18px; /* antes 22 */
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.summary-card .amount {
+    font-size: 27px; /* antes 28 */
+    font-weight: 700;
+    margin: 4px 0;
+}
+
+.summary-card .label {
+    font-size: 11px; /* antes 11 */
+    letter-spacing: 0.8px;
+}
+
+.summary-card .hint {
+    font-size: 12px;
+}
+
+/* Colores claro */
+[data-bs-theme="light"] .summary-card.income {
+    background: rgba(34,197,94,.12);
+    color: #166534;
+}
+
+[data-bs-theme="light"] .summary-card.expense {
+    background: rgba(239,68,68,.12);
+    color: #7f1d1d;
+}
+
+[data-bs-theme="light"] .summary-card.balance {
+    background: rgba(37,99,235,.12);
+    color: #1e3a8a;
+}
+
+/* Colores oscuro */
+[data-bs-theme="dark"] .summary-card.income {
+    background: rgba(40, 167, 69, 0.15);
+    color: #9be7b4;
+}
+
+[data-bs-theme="dark"] .summary-card.expense {
+    background: rgba(220, 53, 69, 0.15);
+    color: #f5a7ae;
+}
+
+[data-bs-theme="dark"] .summary-card.balance {
+    background: rgba(13, 110, 253, 0.18);
+    color: #b6d4fe;
+}
+
+/* Hover tarjetas */
+.summary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,.15);
+}
+
+[data-bs-theme="dark"] .summary-card:hover {
+    box-shadow: 0 12px 28px rgba(0,0,0,.45);
+}
+
+/* =================================================
+   BOTONES — FEEDBACK
+   ================================================= */
+.btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+    opacity: 0.9;
+}
+
+/* =================================================
+   SALDOS
+   ================================================= */
+.saldo-positivo {
+    color: var(--fa-income);
+    font-weight: 600;
+}
+
+.saldo-negativo {
+    color: var(--fa-expense);
+    font-weight: 600;
+}
+
+[data-bs-theme="dark"] .saldo-positivo {
+    color: #4ade80;
+}
+
+[data-bs-theme="dark"] .saldo-negativo {
+    color: #f87171;
+}
+
+/* =================================================
+   INPUTS PRO
+   ================================================= */
+.form-control,
+.form-select {
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.95rem;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--fa-blue);
+    box-shadow: 0 0 0 0.15rem rgba(37,99,235,.15);
+}
+
+/* =================================================
+   BOTONES — MICRO UX PRO
+   ================================================= */
+
+/* Botón acción principal (Agregar, Guardar, Login) */
+.btn-action-primary {
+    background-color: var(--fa-blue);
+    border-color: var(--fa-blue);
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.btn-action-primary:hover {
+    background-color: var(--fa-blue-dark);
+    border-color: var(--fa-blue-dark);
+}
+
+/* Botón acción secundaria (Ver, Cancelar, Volver) */
+.btn-action-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border-soft);
+    color: var(--text-main);
+}
+
+.btn-action-secondary:hover {
+    background-color: rgba(0,0,0,.03);
+}
+
+/* Botón editar */
+.btn-action-warning {
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+    color: #664d03;
+}
+
+.btn-action-warning:hover {
+    background-color: #ffe69c;
+}
+
+/* Botón eliminar */
+.btn-action-danger {
+    background-color: #fdecea;
+    border-color: #f5c2c7;
+    color: #842029;
+}
+
+.btn-action-danger:hover {
+    background-color: #f8d7da;
+}
+
+.btn-action-menu {
+    border: none;
+    background: transparent;
+    padding: 0.35rem 0.5rem;
+    color: var(--text-muted);
+}
+
+.btn-action-menu:hover {
+    background-color: rgba(0,0,0,0.05);
+    border-radius: 8px;
+    color: var(--text-main);
+}
+
+[data-bs-theme="dark"] .btn-action-menu:hover {
+    background-color: rgba(255,255,255,0.08);
+}
+
+/* Modo oscuro */
+[data-bs-theme="dark"] .btn-action-secondary:hover {
+    background-color: rgba(255,255,255,.05);
+}
+
+
+[data-bs-theme="dark"] .navbar-brand i {
+    color: #6ea8fe;
+}
+
+/* =========================
+   NAVBAR – MICRO UX
+   ========================= */
+
+.navbar {
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.navbar .navbar-brand {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.navbar .navbar-brand:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+/* =========================
+   LOGO NAVBAR – BRAND
+   ========================= */
+
+.navbar-brand img {
+    height: 36px;
+    border-radius: 6px;
+    transition: transform 0.15s ease;
+}
+
+.navbar-brand:hover img {
+    transform: translateY(-1px);
+}
+
+/* Botones del navbar */
+.navbar .btn {
+    transition: 
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.navbar .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,.12);
+}
+
+/* =========================
+   ACCIONES EN TABLAS – MICRO UX
+   ========================= */
+
+.table td .btn {
+    transition: 
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+/* Hover general */
+.table td .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,.12);
+}
+
+/* Botón eliminar – más calmado */
+.btn-outline-danger {
+    opacity: 0.75;
+}
+
+.btn-outline-danger:hover {
+    opacity: 1;
+    background-color: rgba(220,53,69,.08);
+}
+
+/* Botón editar – feedback suave */
+.btn-outline-warning:hover {
+    background-color: rgba(255,193,7,.15);
+}
+
+/* Botón acción principal */
+.btn-primary {
+    background-color: var(--fa-blue);
+    border-color: var(--fa-blue);
+    box-shadow: 0 4px 12px rgba(37,99,235,.25);
+}
+
+.btn-primary:hover {
+    background-color: var(--fa-blue-dark);
+}
+
+/* Íconos dentro de botones */
+.btn i {
+    margin-right: 4px;
+}
+
+/* =========================
+   ESPACIADO GENERAL LAYOUT
+   ========================= */
+.container {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+/* =========================
+   TABLA – AJUSTE DE POSICIÓN
+   ========================= */
+.table {
+    margin-top: 0.5rem;
+}
+
+/* =========================
+   BOTONES – ESTADOS DISABLED
+   ========================= */
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.55;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+/* =========================
+   FOCUS – ACCESIBILIDAD PRO
+   ========================= */
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.15rem rgba(37,99,235,.25);
+}
+
+/* =========================
+   TABLA – FILA ACTIVA
+   ========================= */
+.table tbody tr {
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.table tbody tr:hover {
+    transform: translateY(-1px);
+}
+
+/* =========================
+   PAGINACIÓN – MICRO UX
+   ========================= */
+.pagination .page-link {
+    border-radius: 8px;
+    margin: 0 2px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pagination .page-item.active .page-link {
+    box-shadow: 0 4px 10px rgba(37,99,235,.35);
+}
+
+/* =========================
+   ALERTAS – MICRO UX
+   ========================= */
+.alert {
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+    font-size: 0.95rem;
+}
+
+.alert-success {
+    background-color: #e6f4ea;
+    color: #0f5132;
+}
+
+.alert-danger {
+    background-color: #fdecea;
+    color: #842029;
+}
+
+[data-bs-theme="dark"] .alert-success {
+    background-color: rgba(40,167,69,.15);
+    color: #9be7b4;
+}
+
+[data-bs-theme="dark"] .alert-danger {
+    background-color: rgba(220,53,69,.15);
+    color: #f5a7ae;
+}
+
+/* =========================
+   ESTADOS VACÍOS
+   ========================= */
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    opacity: 0.9;
+}
+
+.empty-state .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.empty-state h5 {
+    margin-bottom: 0.5rem;
+}
+
+/* =========================
+   MODALES – CONFIRMACIÓN
+   ========================= */
+.modal-content {
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+}
+
+.modal-header {
+    border-bottom: none;
+}
+
+.modal-footer {
+    border-top: none;
+}
+
+/* =========================
+   FIX UX – BOTONES EN TABLAS
+   ========================= */
+
+/* Evitar que los botones de tabla "salten" */
+.table .btn {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Hover más sobrio */
+.table .btn:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 1;
+}
+
+/* =========================
+   FIX CRÍTICO – BOTÓN ELIMINAR
+   ========================= */
+
+/* Nunca ocultar botones danger */
+.btn-outline-danger {
+    opacity: 1;
+}
+
+/* Hover correcto */
+.btn-outline-danger:hover {
+    color: #842029;
+    background-color: rgba(220,53,69,0.15);
+    border-color: #dc3545;
+}
+
+/* Modo oscuro */
+[data-bs-theme="dark"] .btn-outline-danger {
+    color: #f87171;
+    border-color: #f87171;
+}
+
+[data-bs-theme="dark"] .btn-outline-danger:hover {
+    background-color: rgba(248,113,113,0.15);
+    color: #fecaca;
+}
+
+/* =========================
+   FIX CRÍTICO – BOTÓN ELIMINAR
+   ========================= */
+   
+  /* =========================
+   SELECTOR DE TEMA – 1.0 ESTABLE
+   ========================= */
+
+.theme-dropdown .dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.15s ease;
+    border-radius: 8px;
+}
+
+.theme-dropdown .dropdown-item:hover {
+    background-color: rgba(0,0,0,0.04);
+}
+
+[data-bs-theme="dark"] .theme-dropdown .dropdown-item:hover {
+    background-color: rgba(255,255,255,0.08);
+}
+
+.theme-dropdown .dropdown-item.active-theme {
+    background-color: rgba(13,110,253,0.08);
+    font-weight: 600;
+}
+
+.theme-check {
+    font-size: 16px;
+}
+
+/* =========================
+   NOTIFICACIONES DASHBOARD
+   ========================= */
+.notification-panel {
+    width: min(360px, calc(100vw - 2rem));
+    border: 0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+@media (max-width: 575.98px) {
+    .notification-dropdown {
+        position: static;
+    }
+
+    .notification-panel {
+        position: absolute;
+        left: 1rem;
+        right: 1rem;
+        top: 76px;
+        width: auto;
+        max-width: none;
+        transform: none !important;
+    }
+}
+
+.notification-item {
+    border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.notification-item:last-child {
+    border-bottom: 0;
+}
+
+.notification-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    margin-top: 6px;
+    background-color: #2563eb;
+}
+
+.notification-dot-success {
+    background-color: #198754;
+}
+
+.notification-dot-warning {
+    background-color: #ffc107;
+}
+
+.notification-dot-danger {
+    background-color: #dc3545;
+}
+
+[data-bs-theme="dark"] .notification-item {
+    border-bottom-color: rgba(255,255,255,.08);
+}
