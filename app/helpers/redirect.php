@@ -4,7 +4,7 @@
    REDIRECCIÓN GENERAL
    ====================================================== */
 
-function redirect(string $path, array $params = []): void
+function redirect(string $path, array $params = [], int $statusCode = 303): void
 {
     $url = $path;
 
@@ -13,7 +13,8 @@ function redirect(string $path, array $params = []): void
         $url .= '?' . $query;
     }
 
-    header("Location: {$url}");
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+    header("Location: {$url}", true, $statusCode);
     exit;
 }
 

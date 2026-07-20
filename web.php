@@ -183,6 +183,19 @@ if ($action === 'login') {
 if ($action === 'logout') {
 
     session_unset();
+
+    if (ini_get('session.use_cookies')) {
+        $cookieParams = session_get_cookie_params();
+        setcookie(session_name(), '', [
+            'expires' => time() - 42000,
+            'path' => $cookieParams['path'] ?? '/',
+            'domain' => $cookieParams['domain'] ?? '',
+            'secure' => $cookieParams['secure'] ?? false,
+            'httponly' => $cookieParams['httponly'] ?? true,
+            'samesite' => $cookieParams['samesite'] ?? 'Lax',
+        ]);
+    }
+
     session_destroy();
 
     redirect(LOGIN_PATH);
