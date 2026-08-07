@@ -65,7 +65,7 @@ function sendWelcomeEmail($toEmail, $toName)
     $appUrl = rtrim(mailerEnv('APP_URL', [], 'https://finanzasappsan.com'), '/');
 
     if (!$smtpHost || !$smtpUsername || !$smtpPassword || !$fromEmail) {
-        mailerLog('configuracion SMTP incompleta', [
+        mailerLog('configuración SMTP incompleta', [
             'smtp_host' => $smtpHost ? 'definido' : 'faltante',
             'smtp_username' => $smtpUsername ? 'definido' : 'faltante',
             'smtp_password' => $smtpPassword ? 'definido' : 'faltante',
@@ -79,7 +79,6 @@ function sendWelcomeEmail($toEmail, $toName)
     $mail = new PHPMailer(true);
 
     try {
-        // Configuración SMTP
         $mail->isSMTP();
         $mail->Host       = $smtpHost;
         $mail->SMTPAuth   = true;
@@ -90,85 +89,147 @@ function sendWelcomeEmail($toEmail, $toName)
             : PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = $smtpPort;
 
-        // Remitente
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'base64';
         $mail->setFrom($fromEmail, $fromName);
-
-        // Destinatario
         $mail->addAddress($toEmail, $toName);
 
-        // Contenido
         $mail->isHTML(true);
-        $mail->Subject = 'Bienvenido a Finanzas App';
+        $mail->Subject = 'Bienvenido a Finanzas App - Tu cuenta está lista';
+
+        $safeName = htmlspecialchars($toName, ENT_QUOTES, 'UTF-8');
+        $loginUrl = htmlspecialchars($appUrl . '/views/auth/login.php', ENT_QUOTES, 'UTF-8');
+        $logoUrl = htmlspecialchars($appUrl . '/public/img/favicon.png', ENT_QUOTES, 'UTF-8');
+        $currentYear = date('Y');
 
         $mail->Body = '
         <!DOCTYPE html>
-        <html>
+        <html lang="es">
         <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Bienvenido a Finanzas App</title>
         </head>
-        <body style="margin:0;padding:0;background-color:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+        <body style="margin:0;padding:0;background:#f3f6fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
 
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f9;padding:30px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#f3f6fb;padding:32px 12px;">
         <tr>
         <td align="center">
 
-        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
-
-        <!-- Header -->
+        <table width="640" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:640px;background:#ffffff;border-radius:22px;overflow:hidden;box-shadow:0 18px 45px rgba(15,23,42,0.14);">
         <tr>
-        <td style="background:#111827;padding:25px;text-align:center;">
-        <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:600;">
-        Finanzas App
+        <td style="background:#1E3A8A;background:linear-gradient(135deg,#1E3A8A 0%,#2563EB 56%,#60A5FA 100%);padding:34px 34px 38px;text-align:left;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+        <td style="vertical-align:middle;">
+        <img src="' . $logoUrl . '" alt="Finanzas App" width="56" height="56" style="display:block;border-radius:14px;background:#ffffff;padding:4px;border:0;">
+        </td>
+        <td align="right" style="vertical-align:middle;">
+        <span style="display:inline-block;color:#dbeafe;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:0.3px;">
+        Cuenta activa
+        </span>
+        </td>
+        </tr>
+        </table>
+
+        <h1 style="color:#ffffff;margin:28px 0 10px;font-size:30px;line-height:1.2;font-weight:800;">
+        Bienvenido a Finanzas App
         </h1>
-        <p style="color:#d1d5db;margin:5px 0 0;font-size:13px;">
-        Controla tu dinero. Construye tu futuro.
+        <p style="color:#e0ecff;margin:0;font-size:15px;line-height:1.7;max-width:500px;">
+        Tu espacio para registrar ingresos, controlar gastos y tomar mejores decisiones con tu dinero.
         </p>
         </td>
         </tr>
 
-        <!-- Body -->
         <tr>
-        <td style="padding:30px 40px;color:#374151;font-size:15px;line-height:1.6;">
-
-        <p style="margin-top:0;">Hola <strong>' . htmlspecialchars($toName) . '</strong>,</p>
-
-        <p>
-        Tu cuenta ha sido creada correctamente y ya puedes comenzar a gestionar tus finanzas con claridad.
+        <td style="padding:34px 34px 14px;">
+        <p style="margin:0 0 16px;color:#111827;font-size:18px;line-height:1.6;">
+        Hola <strong>' . $safeName . '</strong>,
         </p>
 
-        <p>
-        Desde ahora podrás:
+        <p style="margin:0;color:#4b5563;font-size:15px;line-height:1.7;">
+        Tu cuenta fue creada correctamente. Desde ahora puedes acceder a tu panel y comenzar a llevar un control claro, ordenado y visual de tus finanzas personales.
         </p>
 
-        <ul style="padding-left:20px;margin:10px 0 20px;">
-        <li>Registrar ingresos y gastos fácilmente.</li>
-        <li>Visualizar tu saldo en tiempo real.</li>
-        <li>Analizar tu evolución financiera.</li>
-        <li>Descargar reportes profesionales.</li>
-        </ul>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:28px 0 8px;">
+        <tr>
+        <td style="padding:16px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+        <td width="36" style="vertical-align:top;">
+        <span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:#dbeafe;color:#1E3A8A;font-size:12px;font-weight:800;">1</span>
+        </td>
+        <td style="color:#374151;font-size:14px;line-height:1.6;">
+        <strong style="color:#111827;">Registra ingresos y gastos</strong><br>
+        Mantén cada movimiento organizado para conocer tu saldo real.
+        </td>
+        </tr>
+        </table>
+        </td>
+        </tr>
+        <tr><td style="height:12px;"></td></tr>
+        <tr>
+        <td style="padding:16px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+        <td width="36" style="vertical-align:top;">
+        <span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:#dbeafe;color:#1E3A8A;font-size:12px;font-weight:800;">2</span>
+        </td>
+        <td style="color:#374151;font-size:14px;line-height:1.6;">
+        <strong style="color:#111827;">Visualiza tu evolución financiera</strong><br>
+        Consulta gráficas, saldos acumulados y reportes para entender mejor tu progreso.
+        </td>
+        </tr>
+        </table>
+        </td>
+        </tr>
+        <tr><td style="height:12px;"></td></tr>
+        <tr>
+        <td style="padding:16px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+        <td width="36" style="vertical-align:top;">
+        <span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:#dbeafe;color:#1E3A8A;font-size:12px;font-weight:800;">3</span>
+        </td>
+        <td style="color:#374151;font-size:14px;line-height:1.6;">
+        <strong style="color:#111827;">Recibe recordatorios y novedades</strong><br>
+        Usa las notificaciones para mantener tu control financiero al día.
+        </td>
+        </tr>
+        </table>
+        </td>
+        </tr>
+        </table>
 
-        <div style="text-align:center;margin:30px 0;">
-        <a href="' . htmlspecialchars($appUrl . '/views/auth/login.php') . '"
-        style="background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:600;font-size:14px;display:inline-block;">
-        Ir al Panel
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:30px 0 22px;">
+        <tr>
+        <td align="center">
+        <a href="' . $loginUrl . '"
+        style="background:#2563EB;color:#ffffff;text-decoration:none;padding:14px 26px;border-radius:12px;font-weight:700;font-size:15px;display:inline-block;box-shadow:0 10px 22px rgba(37,99,235,0.28);">
+        Iniciar sesión
         </a>
-        </div>
+        </td>
+        </tr>
+        </table>
 
-        <p style="margin-bottom:0;">
-        Gracias por confiar en <strong>Finanzas App</strong>.
+        <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.7;text-align:center;">
+        Si no creaste esta cuenta, puedes ignorar este correo.
         </p>
-
         </td>
         </tr>
 
-        <!-- Footer -->
         <tr>
-        <td style="background:#f9fafb;padding:20px;text-align:center;font-size:12px;color:#6b7280;">
-        © ' . date('Y') . ' Finanzas App. Todos los derechos reservados.
+        <td style="padding:24px 34px 30px;text-align:center;">
+        <div style="height:1px;background:#e5e7eb;margin-bottom:20px;"></div>
+        <p style="margin:0 0 6px;color:#111827;font-size:13px;font-weight:700;">
+        Finanzas App
+        </p>
+        <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.6;">
+        Controla tu dinero. Construye tu futuro.<br>
+        © ' . $currentYear . ' Finanzas App. Todos los derechos reservados.
+        </p>
         </td>
         </tr>
-
         </table>
 
         </td>
@@ -177,23 +238,22 @@ function sendWelcomeEmail($toEmail, $toName)
 
         </body>
         </html>
-    ';
+        ';
 
-        $mail->AltBody = 
+        $mail->AltBody =
         "Hola {$toName},
 
-        Tu cuenta ha sido creada correctamente en Finanzas App.
+        Tu cuenta fue creada correctamente en Finanzas App.
 
-        Ahora puedes registrar ingresos y gastos, ver tu saldo en tiempo real y descargar reportes.
+        Ahora puedes registrar ingresos y gastos, visualizar tu evolución financiera, consultar reportes y recibir recordatorios para mantener tu control financiero al día.
 
         Ingresa aquí:
         {$appUrl}/views/auth/login.php
 
         Gracias por confiar en Finanzas App.";
-        
+
         $mail->send();
         return true;
-
     } catch (Exception $e) {
         mailerLog('fallo al enviar correo', [
             'error' => $mail->ErrorInfo ?: $e->getMessage(),
