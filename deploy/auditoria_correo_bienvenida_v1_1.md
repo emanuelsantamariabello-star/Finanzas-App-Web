@@ -142,3 +142,29 @@ Se aplicó una corrección controlada en `app/helpers/mailer.php`:
 ## Estado
 
 Auditoría completada y corrección técnica aplicada. Falta validar con una cuenta nueva en el entorno donde existan credenciales SMTP reales.
+
+## Validación en producción
+
+Fecha: 2026-08-07
+
+Se validó el flujo real en producción después de desplegar la corrección:
+
+1. Primer intento después de configurar SMTP.
+   - El registro creó el usuario correctamente.
+   - El correo no salió.
+   - `logs/errors.log` registró: `SMTP Error: Could not authenticate`.
+   - El host, puerto y cifrado estaban correctos: `smtp.hostinger.com`, `465`, `smtps`.
+
+2. Causa operativa confirmada.
+   - La contraseña configurada para el buzón SMTP no correspondía a la contraseña real del buzón.
+   - No era un problema del código ni del host SMTP.
+
+3. Corrección aplicada en producción.
+   - Se rotó la contraseña del buzón de correo en Hostinger.
+   - Se actualizó `SMTP_PASSWORD` en `.env.php` de producción.
+   - No se versionó ni documentó la contraseña.
+
+4. Resultado final.
+   - Se registró un usuario nuevo de prueba.
+   - El correo de bienvenida fue enviado correctamente.
+   - El flujo quedó validado en producción.

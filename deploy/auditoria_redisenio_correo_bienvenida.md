@@ -110,3 +110,17 @@ $_ENV['SMTP_ENCRYPTION'] = 'tls';
 ## Estado
 
 Rediseño implementado y listo para empaquetar. Falta prueba real de envío en producción con credenciales SMTP reales.
+
+## Validación final de producción
+
+Fecha: 2026-08-07
+
+La actualización fue desplegada y probada en producción:
+
+- El servicio de correo de Hostinger está activo para `finanzasappsan.com`.
+- El buzón usado para SMTP es `soporte@finanzasappsan.com`.
+- La configuración final usa `smtp.hostinger.com`, puerto `465` y cifrado `smtps`.
+- El error inicial `SMTP Error: Could not authenticate` se resolvió rotando la contraseña del buzón.
+- Después de actualizar `SMTP_PASSWORD` en `.env.php`, el correo de bienvenida se envió correctamente.
+- No hubo cambios de base de datos para esta actualización.
+- `.env.php` sigue fuera del repositorio y no se versionaron credenciales.
