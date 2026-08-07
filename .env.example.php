@@ -21,6 +21,7 @@ $_ENV['DB_PASS'] = 'password_muy_segura_aqui';
 // Configuracion SMTP para correos transaccionales
 $_ENV['SMTP_HOST'] = 'smtp.tu-proveedor.com';
 $_ENV['SMTP_PORT'] = '465';
+$_ENV['SMTP_ENCRYPTION'] = 'smtps'; // smtps para 465, tls para 587
 $_ENV['SMTP_USERNAME'] = 'correo@tu-dominio.com';
 $_ENV['SMTP_PASSWORD'] = 'password_smtp_seguro';
 $_ENV['SMTP_FROM_EMAIL'] = 'correo@tu-dominio.com';

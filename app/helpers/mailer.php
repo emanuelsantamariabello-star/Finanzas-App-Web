@@ -7,6 +7,47 @@ require_once __DIR__ . '/../../vend0r/phpmailer/src/SMTP.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+function mailerEnv($primaryKey, $fallbackKeys = [], $default = '')
+{
+    $keys = array_merge([$primaryKey], $fallbackKeys);
+
+    foreach ($keys as $key) {
+        if (isset($_ENV[$key]) && trim((string) $_ENV[$key]) !== '') {
+            return trim((string) $_ENV[$key]);
+        }
+    }
+
+    return $default;
+}
+
+function mailerLog($message, array $context = [])
+{
+    $logDir = __DIR__ . '/../../logs';
+    $logFile = $logDir . '/errors.log';
+
+    if (!is_dir($logDir)) {
+        @mkdir($logDir, 0755, true);
+    }
+
+    $safeContext = [];
+    foreach ($context as $key => $value) {
+        if (stripos($key, 'pass') !== false || stripos($key, 'password') !== false) {
+            continue;
+        }
+
+        $safeContext[$key] = $value;
+    }
+
+    $line = '[' . date('Y-m-d H:i:s') . '] Correo bienvenida: ' . $message;
+    if ($safeContext) {
+        $line .= ' | ' . json_encode($safeContext, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    if (@file_put_contents($logFile, $line . PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
+        error_log($line);
+    }
+}
+
 function sendWelcomeEmail($toEmail, $toName)
 {
     $envFile = __DIR__ . '/../../.env.php';
@@ -14,15 +55,24 @@ function sendWelcomeEmail($toEmail, $toName)
         require_once $envFile;
     }
 
-    $smtpHost = $_ENV['SMTP_HOST'] ?? '';
-    $smtpUsername = $_ENV['SMTP_USERNAME'] ?? '';
-    $smtpPassword = $_ENV['SMTP_PASSWORD'] ?? '';
-    $smtpPort = (int) ($_ENV['SMTP_PORT'] ?? 465);
-    $fromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? $smtpUsername;
-    $fromName = $_ENV['SMTP_FROM_NAME'] ?? 'Finanzas App';
-    $appUrl = rtrim($_ENV['APP_URL'] ?? 'https://finanzasappsan.com', '/');
+    $smtpHost = mailerEnv('SMTP_HOST', ['MAIL_HOST']);
+    $smtpUsername = mailerEnv('SMTP_USERNAME', ['MAIL_USER', 'MAIL_USERNAME']);
+    $smtpPassword = mailerEnv('SMTP_PASSWORD', ['MAIL_PASS', 'MAIL_PASSWORD']);
+    $smtpPort = (int) mailerEnv('SMTP_PORT', ['MAIL_PORT'], '465');
+    $smtpEncryption = strtolower(mailerEnv('SMTP_ENCRYPTION', ['MAIL_ENCRYPTION'], 'smtps'));
+    $fromEmail = mailerEnv('SMTP_FROM_EMAIL', ['MAIL_FROM_EMAIL'], $smtpUsername);
+    $fromName = mailerEnv('SMTP_FROM_NAME', ['MAIL_FROM_NAME'], 'Finanzas App');
+    $appUrl = rtrim(mailerEnv('APP_URL', [], 'https://finanzasappsan.com'), '/');
 
     if (!$smtpHost || !$smtpUsername || !$smtpPassword || !$fromEmail) {
+        mailerLog('configuracion SMTP incompleta', [
+            'smtp_host' => $smtpHost ? 'definido' : 'faltante',
+            'smtp_username' => $smtpUsername ? 'definido' : 'faltante',
+            'smtp_password' => $smtpPassword ? 'definido' : 'faltante',
+            'from_email' => $fromEmail ? 'definido' : 'faltante',
+            'to_email' => $toEmail,
+        ]);
+
         return false;
     }
 
@@ -35,7 +85,9 @@ function sendWelcomeEmail($toEmail, $toName)
         $mail->SMTPAuth   = true;
         $mail->Username   = $smtpUsername;
         $mail->Password   = $smtpPassword;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->SMTPSecure = $smtpEncryption === 'tls'
+            ? PHPMailer::ENCRYPTION_STARTTLS
+            : PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = $smtpPort;
 
         // Remitente
@@ -143,6 +195,14 @@ function sendWelcomeEmail($toEmail, $toName)
         return true;
 
     } catch (Exception $e) {
+        mailerLog('fallo al enviar correo', [
+            'error' => $mail->ErrorInfo ?: $e->getMessage(),
+            'smtp_host' => $smtpHost,
+            'smtp_port' => $smtpPort,
+            'smtp_encryption' => $smtpEncryption,
+            'to_email' => $toEmail,
+        ]);
+
         return false;
     }
 }

@@ -105,6 +105,40 @@ $_ENV['SMTP_FROM_NAME'] = 'Finanzas App';
 $_ENV['APP_URL'] = 'https://finanzasappsan.com';
 ```
 
+## Corrección aplicada
+
+Fecha: 2026-08-06
+
+Se aplicó una corrección controlada en `app/helpers/mailer.php`:
+
+1. Compatibilidad de variables de entorno.
+   - Se mantienen `SMTP_*` como variables principales.
+   - Se aceptan alias `MAIL_*` como respaldo:
+     - `MAIL_HOST`
+     - `MAIL_PORT`
+     - `MAIL_USER`
+     - `MAIL_USERNAME`
+     - `MAIL_PASS`
+     - `MAIL_PASSWORD`
+     - `MAIL_FROM_EMAIL`
+     - `MAIL_FROM_NAME`
+     - `MAIL_ENCRYPTION`
+
+2. Logging seguro de fallos.
+   - Los errores del correo de bienvenida quedan en `logs/errors.log`.
+   - No se registran contraseñas ni secretos SMTP.
+   - Si el archivo de log no se puede escribir, se usa `error_log()`.
+
+3. Compatibilidad de cifrado.
+   - `SMTP_ENCRYPTION=smtps` usa SMTPS para puerto 465.
+   - `SMTP_ENCRYPTION=tls` usa STARTTLS para puerto 587.
+   - Si no se define, el valor por defecto es `smtps`.
+
+4. Flujo de registro preservado.
+   - La cuenta se sigue creando aunque el correo falle.
+   - El fallo queda registrado para diagnóstico.
+   - No se muestra error técnico al usuario final.
+
 ## Estado
 
-Auditoría completada. No se aplicaron cambios funcionales todavía.
+Auditoría completada y corrección técnica aplicada. Falta validar con una cuenta nueva en el entorno donde existan credenciales SMTP reales.
