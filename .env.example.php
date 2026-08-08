@@ -29,6 +29,10 @@ $_ENV['SMTP_FROM_NAME'] = 'Finanzas App';
 $_ENV['APP_URL'] = 'https://tu-dominio.com';
 $_ENV['APP_BASE_PATH'] = '';
 
+// Configuracion de Google Sign-In
+// Client ID publico creado en Google Cloud para este dominio/origen.
+$_ENV['GOOGLE_CLIENT_ID'] = '';
+
 // Usuarios administradores separados por coma.
 // Deben ser IDs existentes de la tabla users.
 $_ENV['ADMIN_USER_IDS'] = '1';

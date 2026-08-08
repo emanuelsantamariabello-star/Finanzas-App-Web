@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../app/config/app.php';
 require_once __DIR__ . '/../../app/helpers/csrf.php';
 
+$googleClientId = trim((string) ($_ENV['GOOGLE_CLIENT_ID'] ?? ''));
 
 if (isset($_SESSION['user_id'])) {
     header("Location: " . DASHBOARD_PATH);
@@ -84,6 +85,16 @@ if (isset($_SESSION['user_id'])) {
                   Entrar
                 </button>
 
+                <?php if ($googleClientId !== ''): ?>
+                <div class="auth-divider">
+                    <span>o</span>
+                </div>
+
+                <div class="d-flex justify-content-center">
+                    <div id="googleLoginButton"></div>
+                </div>
+                <?php endif; ?>
+
                 <div class="text-center mt-4">
                   <a href="<?= REGISTER_PATH ?>" class="text-decoration-none">
                      ¿No tienes cuenta? Crear una
@@ -91,9 +102,65 @@ if (isset($_SESSION['user_id'])) {
 </div>
             </form>
 
+            <?php if ($googleClientId !== ''): ?>
+            <form method="POST" action="<?= WEB_ROUTE ?>" id="googleLoginForm" class="d-none">
+                <input type="hidden" name="action" value="google_login">
+                <input type="hidden" name="_csrf" value="<?= csrfToken() ?>">
+                <input type="hidden" name="credential" id="google_login_credential">
+            </form>
+            <?php endif; ?>
+
         </div>
     </div>
 </div>
+
+<?php if ($googleClientId !== ''): ?>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+function renderGoogleLoginButton(attempts = 0) {
+    const button = document.getElementById('googleLoginButton');
+    const form = document.getElementById('googleLoginForm');
+    const credentialInput = document.getElementById('google_login_credential');
+
+    if (!button || !form || !credentialInput) {
+        return;
+    }
+
+    if (!window.google) {
+        if (attempts < 20) {
+            setTimeout(function () {
+                renderGoogleLoginButton(attempts + 1);
+            }, 150);
+        }
+        return;
+    }
+
+    google.accounts.id.initialize({
+        client_id: "<?= e($googleClientId) ?>",
+        callback: function (response) {
+            if (!response || !response.credential) {
+                return;
+            }
+
+            credentialInput.value = response.credential;
+            form.submit();
+        }
+    });
+
+    google.accounts.id.renderButton(button, {
+        theme: 'outline',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'pill',
+        width: 320
+    });
+}
+
+window.addEventListener('load', function () {
+    renderGoogleLoginButton();
+});
+</script>
+<?php endif; ?>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
