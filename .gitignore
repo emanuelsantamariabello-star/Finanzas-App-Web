@@ -23,6 +23,7 @@ node_modules/
 
 # 📝 Logs y caché
 *.log
+output/
 tmp/
 cache/
 
