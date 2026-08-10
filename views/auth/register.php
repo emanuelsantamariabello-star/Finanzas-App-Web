@@ -1,6 +1,7 @@
 <?php
 require_once '../../app/config/app.php';
 require_once '../../app/helpers/csrf.php';
+$googleClientId = trim((string) ($_ENV['GOOGLE_CLIENT_ID'] ?? ''));
 ?>
 
 <?php include __DIR__ . '/../layouts/header.php'; ?>
@@ -90,6 +91,16 @@ require_once '../../app/helpers/csrf.php';
           Crear cuenta
         </button>
 
+        <?php if ($googleClientId !== ''): ?>
+          <div class="auth-divider">
+            <span>o</span>
+          </div>
+
+          <div class="d-flex justify-content-center">
+            <div id="googleRegisterButton"></div>
+          </div>
+        <?php endif; ?>
+
         <div class="text-center mt-4">
           <a href="<?= LOGIN_PATH ?>" class="text-decoration-none">
             Ya tengo cuenta
@@ -100,5 +111,124 @@ require_once '../../app/helpers/csrf.php';
     </div>
   </div>
 </div>
+
+<?php if ($googleClientId !== ''): ?>
+<div class="modal fade" id="googlePasswordModal" tabindex="-1" aria-labelledby="googlePasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" action="<?= WEB_ROUTE ?>" class="modal-content rounded-4">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold" id="googlePasswordModalLabel">
+            Crea tu contraseña de seguridad
+          </h5>
+          <p class="text-muted small mb-0">
+            Google confirma tu identidad. Esta contraseña protege cambios críticos dentro de Finanzas App.
+          </p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" name="action" value="google_register">
+        <input type="hidden" name="_csrf" value="<?= csrfToken() ?>">
+        <input type="hidden" name="credential" id="google_register_credential">
+
+        <div class="mb-3">
+          <label class="form-label">Contraseña de seguridad</label>
+          <div class="input-group">
+            <input type="password"
+                   id="google_register_password"
+                   name="password"
+                   class="form-control"
+                   minlength="8"
+                   required>
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="togglePassword('google_register_password', this)">
+              <i class="bi bi-lock-fill"></i>
+            </button>
+          </div>
+          <div class="form-text">
+            Mínimo 8 caracteres. Podrás usarla también para iniciar sesión manualmente.
+          </div>
+        </div>
+
+        <div class="mb-0">
+          <label class="form-label">Confirmar contraseña</label>
+          <div class="input-group">
+            <input type="password"
+                   id="google_register_confirm_password"
+                   name="confirm_password"
+                   class="form-control"
+                   minlength="8"
+                   required>
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="togglePassword('google_register_confirm_password', this)">
+              <i class="bi bi-lock-fill"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+          Crear cuenta con Google
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+function renderGoogleRegisterButton(attempts = 0) {
+    const button = document.getElementById('googleRegisterButton');
+    const credentialInput = document.getElementById('google_register_credential');
+    const modalElement = document.getElementById('googlePasswordModal');
+
+    if (!button || !credentialInput || !modalElement) {
+        return;
+    }
+
+    if (!window.google) {
+        if (attempts < 20) {
+            setTimeout(function () {
+                renderGoogleRegisterButton(attempts + 1);
+            }, 150);
+        }
+        return;
+    }
+
+    google.accounts.id.initialize({
+        client_id: "<?= e($googleClientId) ?>",
+        callback: function (response) {
+            if (!response || !response.credential) {
+                return;
+            }
+
+            credentialInput.value = response.credential;
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+        }
+    });
+
+    google.accounts.id.renderButton(button, {
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'pill',
+        width: 320
+    });
+}
+
+window.addEventListener('load', function () {
+    renderGoogleRegisterButton();
+});
+</script>
+<?php endif; ?>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>

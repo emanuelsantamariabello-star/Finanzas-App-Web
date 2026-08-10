@@ -9,6 +9,7 @@ require_once __DIR__ . '/app/helpers/request.php';
 require_once __DIR__ . '/app/helpers/validator.php';
 require_once __DIR__ . '/app/helpers/csrf.php';
 require_once __DIR__ . '/app/helpers/admin.php';
+require_once __DIR__ . '/app/helpers/google_auth.php';
 require_once __DIR__ . '/app/config/database.php';
 
 /* ======================================================
@@ -27,7 +28,9 @@ if (!$action) {
 
 $acciones_post = [
     'register',
+    'google_register',
     'login',
+    'google_login',
     'logout',
     'update_profile',
     'change_password',
@@ -178,6 +181,119 @@ if ($action === 'login') {
     'success' => 'Bienvenido nuevamente, ' . $user['username'] . '.'
 ]);
 
+}
+
+if ($action === 'google_register') {
+
+    $credential = post('credential', '', false);
+    $password = post('password', '', false);
+    $confirm = post('confirm_password', '', false);
+
+    if (!$credential || !$password || !$confirm) {
+        redirectError('Completa la verificación de Google y crea tu contraseña de seguridad.', REGISTER_PATH);
+    }
+
+    if ($password !== $confirm) {
+        redirectError('Las contraseñas no coinciden.', REGISTER_PATH);
+    }
+
+    if (strlen($password) < 8) {
+        redirectError('La contraseña de seguridad debe tener mínimo 8 caracteres.', REGISTER_PATH);
+    }
+
+    try {
+        $payload = verifyGoogleIdToken($credential);
+        $googleSub = (string) $payload['sub'];
+        $email = strtolower(trim((string) $payload['email']));
+
+        if (googleIdentityBySub($pdo, $googleSub)) {
+            redirectError('Esta cuenta de Google ya está registrada. Inicia sesión con Google.', LOGIN_PATH);
+        }
+
+        if (emailExists($pdo, $email)) {
+            redirectError('Ya existe una cuenta de FinanzasApp registrada con este correo. Inicia sesión utilizando el método asociado a tu cuenta.', REGISTER_PATH);
+        }
+
+        $username = generateGoogleUsername($pdo, $payload);
+
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("
+            INSERT INTO users (username, email, password)
+            VALUES (:username, :email, :password)
+        ");
+        $stmt->execute([
+            'username' => $username,
+            'email' => $email,
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+        ]);
+
+        $userId = (int) $pdo->lastInsertId();
+
+        $stmt = $pdo->prepare("
+            INSERT INTO auth_identities (user_id, provider, provider_user_id, provider_email)
+            VALUES (:user_id, 'google', :provider_user_id, :provider_email)
+        ");
+        $stmt->execute([
+            'user_id' => $userId,
+            'provider_user_id' => $googleSub,
+            'provider_email' => $email,
+        ]);
+
+        $pdo->commit();
+
+        require_once __DIR__ . '/app/helpers/mailer.php';
+        sendWelcomeEmail($email, $username);
+
+        startUserSession([
+            'id' => $userId,
+            'username' => $username,
+        ]);
+
+        redirect(DASHBOARD_PATH, [
+            'success' => 'Cuenta creada con Google. Usamos tu nombre de Google como usuario inicial; puedes cambiarlo desde Perfil → Editar perfil.'
+        ]);
+    } catch (RuntimeException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        redirectError($e->getMessage(), REGISTER_PATH);
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        redirectError('No se pudo crear la cuenta con Google. Intenta nuevamente.', REGISTER_PATH);
+    }
+}
+
+if ($action === 'google_login') {
+
+    $credential = post('credential', '', false);
+
+    if (!$credential) {
+        redirectError('Completa la verificación de Google para iniciar sesión.', LOGIN_PATH);
+    }
+
+    try {
+        $payload = verifyGoogleIdToken($credential);
+        $user = googleIdentityBySub($pdo, (string) $payload['sub']);
+
+        if (!$user) {
+            redirectError('No existe una cuenta asociada a ese Google. Crea tu cuenta primero.', REGISTER_PATH);
+        }
+
+        startUserSession($user);
+
+        redirect(DASHBOARD_PATH, [
+            'success' => 'Bienvenido nuevamente, ' . $user['username'] . '.'
+        ]);
+    } catch (RuntimeException $e) {
+        redirectError($e->getMessage(), LOGIN_PATH);
+    } catch (PDOException $e) {
+        redirectError('No se pudo iniciar sesión con Google. Verifica que la base de datos esté actualizada.', LOGIN_PATH);
+    }
 }
 
 if ($action === 'logout') {

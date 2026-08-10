@@ -23,7 +23,9 @@ La versión **v1.1** incorpora mejoras técnicas, funcionales y visuales enfocad
 ### Gestión de usuarios
 
 - Registro de usuarios.
+- Registro de usuarios con Google y contraseña local de seguridad.
 - Inicio de sesión seguro.
+- Inicio de sesión con Google para cuentas vinculadas.
 - Cierre de sesión.
 - Actualización de perfil.
 - Cambio de contraseña.
@@ -65,6 +67,8 @@ La versión **v1.1** incorpora mejoras técnicas, funcionales y visuales enfocad
 - Validación de formularios.
 - Escape de datos.
 - Hash seguro de contraseñas.
+- Verificación backend de ID Token de Google.
+- Asociación de identidades externas mediante tabla dedicada.
 - Variables de entorno.
 - Consultas preparadas mediante PDO.
 - Acceso administrativo controlado por variable de entorno.
@@ -161,6 +165,7 @@ En la versión **v1.1** se agregaron helpers compartidos para centralizar consul
 - mbstring
 - fileinfo
 - openssl
+- curl o `allow_url_fopen` habilitado para consultar certificados públicos de Google
 - GD o ImageMagick
 
 Recomendado:
@@ -201,6 +206,14 @@ como:
 ```
 
 y configurar las credenciales.
+
+Para habilitar Google Sign-In, configurar también:
+
+```
+$_ENV['GOOGLE_CLIENT_ID'] = 'client-id-creado-en-google-cloud';
+```
+
+El valor real debe permanecer únicamente en `.env.php`.
 
 ## Configurar BASE_PATH
 
@@ -255,6 +268,7 @@ Antes de desplegar:
 - Revisar permisos de logs.
 - Ejecutar migraciones pendientes de base de datos.
 - Configurar `ADMIN_USER_IDS` con el ID del usuario administrador.
+- Configurar `GOOGLE_CLIENT_ID` si se habilita registro e inicio de sesión con Google.
 - Verificar que la tabla `system_notifications` exista para el panel de novedades.
 
 Migraciones relevantes para v1.1:
@@ -262,6 +276,7 @@ Migraciones relevantes para v1.1:
 ```
 database/migrations/2026_07_19_add_expenses_reflection_type.sql
 database/migrations/2026_07_19_create_system_notifications.sql
+database/migrations/2026_08_08_create_auth_identities.sql
 ```
 
 Variable administrativa:
