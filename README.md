@@ -12,9 +12,9 @@ Además de resolver una necesidad real, el proyecto fue diseñado para aplicar b
 
 🟢 **En desarrollo activo**
 
-Versión actual: **v1.1**
+Versión actual: **v1.2**
 
-La versión **v1.1** incorpora mejoras técnicas, funcionales y visuales enfocadas en estabilidad, reportes, notificaciones, experiencia responsive y preparación para producción.
+La versión **v1.2** incorpora registro e inicio de sesión con Google, manteniendo contraseña local de seguridad para cambios críticos y conservando el flujo tradicional de acceso.
 
 ---
 
