@@ -96,7 +96,7 @@ $googleClientId = trim((string) ($_ENV['GOOGLE_CLIENT_ID'] ?? ''));
             <span>o</span>
           </div>
 
-          <div class="d-flex justify-content-center">
+          <div class="google-auth-button d-flex justify-content-center">
             <div id="googleRegisterButton"></div>
           </div>
         <?php endif; ?>
@@ -189,6 +189,9 @@ function renderGoogleRegisterButton(attempts = 0) {
     const button = document.getElementById('googleRegisterButton');
     const credentialInput = document.getElementById('google_register_credential');
     const modalElement = document.getElementById('googlePasswordModal');
+    const googleButtonTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark'
+        ? 'filled_black'
+        : 'outline';
 
     if (!button || !credentialInput || !modalElement) {
         return;
@@ -217,7 +220,7 @@ function renderGoogleRegisterButton(attempts = 0) {
     });
 
     google.accounts.id.renderButton(button, {
-        theme: 'outline',
+        theme: googleButtonTheme,
         size: 'large',
         text: 'continue_with',
         shape: 'pill',

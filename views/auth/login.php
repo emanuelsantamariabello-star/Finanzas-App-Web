@@ -90,7 +90,7 @@ if (isset($_SESSION['user_id'])) {
                     <span>o</span>
                 </div>
 
-                <div class="d-flex justify-content-center">
+                <div class="google-auth-button d-flex justify-content-center">
                     <div id="googleLoginButton"></div>
                 </div>
                 <?php endif; ?>
@@ -121,6 +121,9 @@ function renderGoogleLoginButton(attempts = 0) {
     const button = document.getElementById('googleLoginButton');
     const form = document.getElementById('googleLoginForm');
     const credentialInput = document.getElementById('google_login_credential');
+    const googleButtonTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark'
+        ? 'filled_black'
+        : 'outline';
 
     if (!button || !form || !credentialInput) {
         return;
@@ -148,7 +151,7 @@ function renderGoogleLoginButton(attempts = 0) {
     });
 
     google.accounts.id.renderButton(button, {
-        theme: 'outline',
+        theme: googleButtonTheme,
         size: 'large',
         text: 'signin_with',
         shape: 'pill',

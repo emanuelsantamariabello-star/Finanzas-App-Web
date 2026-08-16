@@ -534,6 +534,14 @@ body {
     background-color: rgba(255,255,255,.16);
 }
 
+.google-auth-button {
+    line-height: 0;
+}
+
+.google-auth-button > div {
+    max-width: 100%;
+}
+
 /* =========================
    ESTADOS VACÍOS
    ========================= */
