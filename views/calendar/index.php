@@ -214,6 +214,7 @@ include dirname(__DIR__) . '/layouts/header.php';
 
 <?php foreach ($events as $event): ?>
     <?php $modalId = 'eventModal' . (int) $event['id'] . '_' . str_replace('-', '', $event['occurrence_date']); ?>
+    <?php $deleteModalId = 'delete' . ucfirst($modalId); ?>
     <div class="modal fade" id="<?= e($modalId) ?>" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content rounded-4">
@@ -250,13 +251,38 @@ include dirname(__DIR__) . '/layouts/header.php';
 
                 <?php include __DIR__ . '/partials/occurrence_actions.php'; ?>
 
-                <form method="POST" action="<?= WEB_ROUTE ?>" class="px-3 pb-3"
-                      onsubmit="return confirm('¿Eliminar este evento financiero?');">
-                    <input type="hidden" name="action" value="delete_financial_event">
-                    <input type="hidden" name="id" value="<?= (int) $event['id'] ?>">
-                    <input type="hidden" name="_csrf" value="<?= csrfToken() ?>">
-                    <button type="submit" class="btn btn-outline-danger w-100">Eliminar evento</button>
-                </form>
+                <div class="px-3 pb-3">
+                    <button type="button"
+                            class="btn btn-outline-danger w-100"
+                            data-bs-toggle="modal"
+                            data-bs-target="#<?= e($deleteModalId) ?>">
+                        Eliminar evento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="<?= e($deleteModalId) ?>" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-danger">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">¿Seguro que deseas eliminar el evento <strong><?= e($event['title']) ?></strong>?</p>
+                    <small class="text-muted">Se eliminarán todas sus ocurrencias. Esta acción no se puede deshacer.</small>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="POST" action="<?= WEB_ROUTE ?>">
+                        <input type="hidden" name="action" value="delete_financial_event">
+                        <input type="hidden" name="id" value="<?= (int) $event['id'] ?>">
+                        <input type="hidden" name="_csrf" value="<?= csrfToken() ?>">
+                        <button type="submit" class="btn btn-danger">Eliminar definitivamente</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

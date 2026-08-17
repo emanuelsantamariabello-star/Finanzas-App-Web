@@ -10,7 +10,7 @@ Incluye:
 - Navegación mensual responsiva con acceso directo de regreso al dashboard.
 - Creación, edición y eliminación de eventos financieros.
 - Tipos de evento: pago, ingreso esperado, gasto programado, cuota, deuda, suscripción, recordatorio y otro.
-- Recurrencias básicas: diaria, semanal, mensual y anual.
+- Recurrencias diarias, semanales, mensuales y anuales con intervalos configurables.
 - Soporte para eventos mensuales en el último día del mes.
 - Estados almacenados: pendiente, completado y cancelado.
 - Estado vencido derivado dinámicamente cuando el evento pendiente ya pasó.
@@ -59,6 +59,7 @@ La aplicación usa este timezone para cálculos de calendario, vencimientos y re
 - Navegación: `views/layouts/header.php`
 - Acciones POST: `web.php`
 - Acciones por ocurrencia: `views/calendar/partials/occurrence_actions.php`
+- Configuración de recurrencia: `views/calendar/partials/form_fields.php`
 - Estilos: `public/css/styles.css`
 
 ## Seguridad

@@ -118,6 +118,24 @@ function normalizeFinancialEventReminder($days): ?int
     return $days >= 0 ? $days : null;
 }
 
+function normalizeFinancialEventRecurrenceInterval($interval): int
+{
+    if ($interval === null || $interval === '') {
+        return 1;
+    }
+
+    if (!is_numeric($interval) || floor((float) $interval) !== (float) $interval) {
+        throw new InvalidArgumentException('El intervalo de recurrencia debe ser un número entero.');
+    }
+
+    $interval = (int) $interval;
+    if ($interval < 1 || $interval > 999) {
+        throw new InvalidArgumentException('El intervalo de recurrencia debe estar entre 1 y 999.');
+    }
+
+    return $interval;
+}
+
 function createFinancialEvent(PDO $pdo, int $userId, array $data): int
 {
     $title = trim((string) ($data['title'] ?? ''));
@@ -128,6 +146,7 @@ function createFinancialEvent(PDO $pdo, int $userId, array $data): int
     $description = trim((string) ($data['description'] ?? ''));
     $status = (string) ($data['status'] ?? 'pendiente');
     $recurrenceType = (string) ($data['recurrence_type'] ?? 'none');
+    $recurrenceInterval = normalizeFinancialEventRecurrenceInterval($data['recurrence_interval'] ?? 1);
     $recurrenceEndsAt = trim((string) ($data['recurrence_ends_at'] ?? ''));
     $reminderDaysBefore = normalizeFinancialEventReminder($data['reminder_days_before'] ?? null);
     $recurrenceIsLastDay = !empty($data['recurrence_is_last_day']) ? 1 : 0;
@@ -154,6 +173,10 @@ function createFinancialEvent(PDO $pdo, int $userId, array $data): int
 
     if (!in_array($recurrenceType, FINANCIAL_EVENT_RECURRENCES, true)) {
         throw new InvalidArgumentException('Recurrencia inválida.');
+    }
+
+    if ($recurrenceType === 'none') {
+        $recurrenceInterval = 1;
     }
 
     if ($recurrenceEndsAt !== '' && !isValidFinancialEventDate($recurrenceEndsAt)) {
@@ -196,7 +219,7 @@ function createFinancialEvent(PDO $pdo, int $userId, array $data): int
             :description,
             :status,
             :recurrence_type,
-            1,
+            :recurrence_interval,
             :recurrence_day_of_month,
             :recurrence_is_last_day,
             :recurrence_ends_at,
@@ -214,6 +237,7 @@ function createFinancialEvent(PDO $pdo, int $userId, array $data): int
         'description' => $description !== '' ? $description : null,
         'status' => $status,
         'recurrence_type' => $recurrenceType,
+        'recurrence_interval' => $recurrenceInterval,
         'recurrence_day_of_month' => $recurrenceDayOfMonth,
         'recurrence_is_last_day' => $recurrenceIsLastDay,
         'recurrence_ends_at' => $recurrenceEndsAt !== '' ? $recurrenceEndsAt : null,
@@ -235,6 +259,7 @@ function updateFinancialEvent(PDO $pdo, int $userId, int $eventId, array $data):
     $description = trim((string) ($data['description'] ?? ''));
     $status = (string) ($data['status'] ?? 'pendiente');
     $recurrenceType = (string) ($data['recurrence_type'] ?? 'none');
+    $recurrenceInterval = normalizeFinancialEventRecurrenceInterval($data['recurrence_interval'] ?? 1);
     $recurrenceEndsAt = trim((string) ($data['recurrence_ends_at'] ?? ''));
     $reminderDaysBefore = normalizeFinancialEventReminder($data['reminder_days_before'] ?? null);
     $recurrenceIsLastDay = !empty($data['recurrence_is_last_day']) ? 1 : 0;
@@ -263,6 +288,10 @@ function updateFinancialEvent(PDO $pdo, int $userId, int $eventId, array $data):
         throw new InvalidArgumentException('Recurrencia inválida.');
     }
 
+    if ($recurrenceType === 'none') {
+        $recurrenceInterval = 1;
+    }
+
     if ($recurrenceEndsAt !== '' && !isValidFinancialEventDate($recurrenceEndsAt)) {
         throw new InvalidArgumentException('Fecha final de recurrencia inválida.');
     }
@@ -286,6 +315,7 @@ function updateFinancialEvent(PDO $pdo, int $userId, int $eventId, array $data):
             description = :description,
             status = :status,
             recurrence_type = :recurrence_type,
+            recurrence_interval = :recurrence_interval,
             recurrence_day_of_month = :recurrence_day_of_month,
             recurrence_is_last_day = :recurrence_is_last_day,
             recurrence_ends_at = :recurrence_ends_at,
@@ -303,6 +333,7 @@ function updateFinancialEvent(PDO $pdo, int $userId, int $eventId, array $data):
         'description' => $description !== '' ? $description : null,
         'status' => $status,
         'recurrence_type' => $recurrenceType,
+        'recurrence_interval' => $recurrenceInterval,
         'recurrence_day_of_month' => $recurrenceDayOfMonth,
         'recurrence_is_last_day' => $recurrenceIsLastDay,
         'recurrence_ends_at' => $recurrenceEndsAt !== '' ? $recurrenceEndsAt : null,
@@ -529,6 +560,7 @@ function financialEventOccurrenceFromEvent(array $event, DateTimeImmutable $date
         'description' => $event['description'],
         'status' => $status,
         'recurrence_type' => $event['recurrence_type'],
+        'recurrence_interval' => (int) ($event['recurrence_interval'] ?? 1),
         'reminder_days_before' => $event['reminder_days_before'] !== null ? (int) $event['reminder_days_before'] : null,
         'is_recurring' => $event['recurrence_type'] !== 'none',
     ];
