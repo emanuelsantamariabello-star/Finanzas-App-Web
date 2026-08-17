@@ -11,6 +11,7 @@ require_once __DIR__ . '/app/helpers/csrf.php';
 require_once __DIR__ . '/app/helpers/admin.php';
 require_once __DIR__ . '/app/helpers/google_auth.php';
 require_once __DIR__ . '/app/helpers/financial_events.php';
+require_once __DIR__ . '/app/helpers/financial_accounts.php';
 require_once __DIR__ . '/app/config/database.php';
 
 /* ======================================================
@@ -47,6 +48,9 @@ $acciones_post = [
     'update_financial_occurrence_status',
     'register_financial_occurrence_income',
     'register_financial_occurrence_expense',
+    'create_financial_account',
+    'update_financial_account',
+    'delete_financial_account',
     'create_system_notification',
     'toggle_system_notification',
     'delete_system_notification',
@@ -102,6 +106,18 @@ $financialEventActions = [
 
 if (isset($financialEventActions[$action])) {
     call_user_func($financialEventActions[$action], $pdo);
+    exit;
+}
+
+// CUENTAS FINANCIERAS
+$financialAccountActions = [
+    'create_financial_account' => 'handleCreateFinancialAccount',
+    'update_financial_account' => 'handleUpdateFinancialAccount',
+    'delete_financial_account' => 'handleDeleteFinancialAccount',
+];
+
+if (isset($financialAccountActions[$action])) {
+    call_user_func($financialAccountActions[$action], $pdo);
     exit;
 }
 
@@ -574,6 +590,52 @@ function deleteExpense(PDO $pdo) {
         'income_id' => $income_id,
         'success'   => 'Gasto eliminado'
     ]);
+}
+
+/* ======================================================
+   FUNCIONES — CUENTAS FINANCIERAS
+   ====================================================== */
+
+function handleCreateFinancialAccount(PDO $pdo): void
+{
+    requireLogin();
+
+    try {
+        createFinancialAccount($pdo, (int) $_SESSION['user_id'], $_POST);
+        redirect(ACCOUNTS_PATH, ['success' => 'Cuenta financiera creada']);
+    } catch (InvalidArgumentException $exception) {
+        redirectError($exception->getMessage(), ACCOUNTS_PATH);
+    } catch (PDOException $exception) {
+        redirectError('No se pudo crear la cuenta. Verifica que la migración esté aplicada.', ACCOUNTS_PATH);
+    }
+}
+
+function handleUpdateFinancialAccount(PDO $pdo): void
+{
+    requireLogin();
+
+    try {
+        updateFinancialAccount($pdo, (int) $_SESSION['user_id'], (int) post('id'), $_POST);
+        redirect(ACCOUNTS_PATH, ['success' => 'Cuenta financiera actualizada']);
+    } catch (InvalidArgumentException | RuntimeException $exception) {
+        redirectError($exception->getMessage(), ACCOUNTS_PATH);
+    } catch (PDOException $exception) {
+        redirectError('No se pudo actualizar la cuenta.', ACCOUNTS_PATH);
+    }
+}
+
+function handleDeleteFinancialAccount(PDO $pdo): void
+{
+    requireLogin();
+
+    try {
+        deleteFinancialAccount($pdo, (int) $_SESSION['user_id'], (int) post('id'));
+        redirect(ACCOUNTS_PATH, ['success' => 'Cuenta financiera eliminada']);
+    } catch (RuntimeException $exception) {
+        redirectError($exception->getMessage(), ACCOUNTS_PATH);
+    } catch (PDOException $exception) {
+        redirectError('No se pudo eliminar la cuenta.', ACCOUNTS_PATH);
+    }
 }
 
 /* ======================================================

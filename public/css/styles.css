@@ -784,6 +784,52 @@ body {
     padding: .8rem 1rem .8rem 2.5rem;
 }
 
+/* =========================
+   CUENTAS FINANCIERAS
+   ========================= */
+.financial-account-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.financial-account-summary,
+.financial-account-card {
+    background-color: var(--bg-card);
+}
+
+.financial-account-card {
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.financial-account-card:hover {
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .12) !important;
+    transform: translateY(-2px);
+}
+
+.financial-account-inactive {
+    opacity: .72;
+}
+
+.financial-account-icon {
+    align-items: center;
+    background-color: rgba(37, 99, 235, .1);
+    border-radius: 1rem;
+    color: var(--fa-blue);
+    display: inline-flex;
+    font-size: 1.35rem;
+    height: 48px;
+    justify-content: center;
+    width: 48px;
+}
+
+.financial-account-balance {
+    background-color: rgba(37, 99, 235, .05);
+    border: 1px solid var(--border-soft);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
 .financial-occurrence-action-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-soft);
@@ -865,6 +911,11 @@ body {
     background-color: rgba(96, 165, 250, .08);
 }
 
+[data-bs-theme="dark"] .financial-account-icon,
+[data-bs-theme="dark"] .financial-account-balance {
+    background-color: rgba(96, 165, 250, .1);
+}
+
 @media (max-width: 767.98px) {
     .calendar-page-actions {
         width: 100%;
@@ -893,6 +944,14 @@ body {
 
     .financial-monthly-last-day {
         width: 100%;
+    }
+
+    .financial-account-page-actions {
+        width: 100%;
+    }
+
+    .financial-account-page-actions .btn {
+        flex: 1 1 190px;
     }
 }
 
