@@ -362,6 +362,7 @@ Las dependencias se encuentran integradas en el proyecto para facilitar su insta
 - Eventos financieros únicos y recurrentes.
 - Recurrencias configurables cada N días, semanas, meses o años.
 - Varias fechas dentro de una misma recurrencia mensual, incluyendo último día del mes.
+- Cuentas financieras manuales con saldo inicial, moneda y estado.
 - Recordatorios internos derivados de eventos próximos.
 - Estados independientes por ocurrencia del calendario.
 - Conversión transaccional de ingresos esperados y gastos programados en movimientos reales.
