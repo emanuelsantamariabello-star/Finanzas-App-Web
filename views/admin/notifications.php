@@ -93,8 +93,9 @@ include dirname(__DIR__) . '/layouts/header.php';
                         Guardar novedad
                     </button>
 
-                    <a href="<?= DASHBOARD_PATH ?>" class="btn btn-outline-secondary">
-                        Volver al panel
+                    <a href="<?= DASHBOARD_PATH ?>" class="btn btn-action-secondary btn-dashboard-return">
+                        <i class="bi bi-house-door"></i>
+                        <span>Volver al dashboard</span>
                     </a>
                 </div>
             </form>

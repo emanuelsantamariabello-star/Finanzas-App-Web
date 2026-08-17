@@ -606,6 +606,13 @@ body {
     gap: .75rem;
 }
 
+.btn-dashboard-return {
+    align-items: center;
+    display: inline-flex;
+    gap: .5rem;
+    justify-content: center;
+}
+
 .calendar-month-navigation {
     align-items: center;
     display: flex;

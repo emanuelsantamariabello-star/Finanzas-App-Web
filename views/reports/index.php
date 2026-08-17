@@ -75,8 +75,9 @@ include dirname(__DIR__) . '/layouts/header.php';
 
     <div class="mt-3">
         <a href="<?= DASHBOARD_PATH ?>"
-           class="btn btn-outline-secondary btn-sm">
-           ⬅️ Volver al panel
+           class="btn btn-action-secondary btn-dashboard-return">
+            <i class="bi bi-house-door"></i>
+            <span>Volver al dashboard</span>
         </a>
     </div>
 
