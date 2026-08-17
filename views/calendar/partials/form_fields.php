@@ -9,6 +9,7 @@ $financialEvent = $financialEvent ?? [
     'description' => '',
     'status' => 'pendiente',
     'recurrence_type' => 'none',
+    'recurrence_interval' => 1,
     'recurrence_is_last_day' => 0,
     'recurrence_ends_at' => '',
     'reminder_days_before' => '',
@@ -76,7 +77,7 @@ $fieldSuffix = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) ($financialEventFie
                   rows="3"><?= e($financialEvent['description'] ?? '') ?></textarea>
     </div>
 
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <label class="form-label fw-semibold">Estado</label>
         <select name="status" class="form-select" required>
             <?php foreach (['pendiente', 'completado', 'cancelado'] as $value): ?>
@@ -87,7 +88,7 @@ $fieldSuffix = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) ($financialEventFie
         </select>
     </div>
 
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <label class="form-label fw-semibold">Recurrencia</label>
         <select name="recurrence_type" class="form-select">
             <?php foreach ($recurrenceLabels as $value => $label): ?>
@@ -98,7 +99,20 @@ $fieldSuffix = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) ($financialEventFie
         </select>
     </div>
 
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
+        <label class="form-label fw-semibold">Repetir cada</label>
+        <input type="number"
+               name="recurrence_interval"
+               class="form-control"
+               min="1"
+               max="999"
+               step="1"
+               value="<?= e($financialEvent['recurrence_interval'] ?? 1) ?>"
+               required>
+        <div class="form-text">Cantidad de días, semanas, meses o años.</div>
+    </div>
+
+    <div class="col-12 col-md-3">
         <label class="form-label fw-semibold">Recordar días antes</label>
         <input type="number"
                name="reminder_days_before"
