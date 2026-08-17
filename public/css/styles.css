@@ -626,6 +626,14 @@ body {
     justify-content: center;
 }
 
+.google-calendar-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    gap: .75rem;
+    justify-content: flex-end;
+}
+
 [data-bs-theme="dark"] .google-calendar-icon {
     background-color: rgba(96, 165, 250, .12);
     color: #93c5fd;
@@ -951,6 +959,10 @@ body {
     }
 
     .google-calendar-action {
+        width: 100%;
+    }
+
+    .google-calendar-actions {
         width: 100%;
     }
 

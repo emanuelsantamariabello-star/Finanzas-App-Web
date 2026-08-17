@@ -12,11 +12,16 @@ Esta fase incluye ahora:
 - Persistencia cifrada de access token y refresh token.
 - Estado visual conectado o sin conectar.
 - Desconexión con confirmación y revocación en Google.
+- Sincronización manual de eventos con confirmación.
+- Creación y actualización idempotente mediante `calendar_event_sync`.
+- Renovación automática del access token mediante refresh token.
+- Traducción de recurrencias locales a reglas RRULE de Google Calendar.
 
 Todavía no incluye:
 
-- Creación, actualización o eliminación de eventos en Google Calendar.
 - Sincronización automática.
+- Eliminación automática de eventos remotos cuando se elimina o cancela el evento local.
+- Lectura de cambios hechos directamente en Google Calendar.
 
 El login actual con Google permanece intacto y continúa usando `GOOGLE_CLIENT_ID` para validar ID Tokens.
 
@@ -92,12 +97,12 @@ No deben registrarse hasta confirmar que esas rutas coinciden con la ubicación 
 5. Los tokens se cifran antes de almacenarse en `external_integrations`.
 6. La desconexión requiere POST, CSRF y confirmación visual.
 7. Google revoca el token antes de que la aplicación elimine la integración local.
+8. La sincronización manual crea eventos nuevos o actualiza el evento remoto relacionado sin duplicarlo.
 
 ## Siguiente fase
 
 Después de validar la conexión OAuth se implementará:
 
-1. Renovación controlada del access token mediante refresh token.
-2. Sincronización manual inicial de eventos.
-3. Tratamiento de expiración, revocación y reintentos.
-4. Sincronización automática en una fase posterior.
+1. Sincronización automática al crear, actualizar o eliminar eventos locales.
+2. Tratamiento avanzado de reintentos y límites de cuota.
+3. Sincronización bidireccional, solo si se aprueba como una fase independiente.

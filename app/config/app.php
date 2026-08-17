@@ -132,6 +132,7 @@ define('CALENDAR_PATH', BASE_PATH . '/views/calendar/index.php');
 define('GOOGLE_CALENDAR_CONNECT_PATH', BASE_PATH . '/routes/google_calendar_connect.php');
 define('GOOGLE_CALENDAR_CALLBACK_PATH', BASE_PATH . '/routes/google_calendar_callback.php');
 define('GOOGLE_CALENDAR_DISCONNECT_PATH', BASE_PATH . '/routes/google_calendar_disconnect.php');
+define('GOOGLE_CALENDAR_SYNC_PATH', BASE_PATH . '/routes/google_calendar_sync.php');
 define('ACCOUNTS_PATH', BASE_PATH . '/views/accounts/index.php');
 define('ADMIN_NOTIFICATIONS_PATH', BASE_PATH . '/views/admin/notifications.php');
 define('REGISTER_PATH', BASE_PATH . '/views/auth/register.php');

@@ -31,6 +31,7 @@ $files = [
     '/app/helpers/financial_events.php',
     '/app/helpers/financial_accounts.php',
     '/app/helpers/google_calendar_oauth.php',
+    '/app/helpers/google_calendar_sync.php',
     '/app/helpers/mailer.php',
     '/views/calendar/index.php',
     '/views/accounts/index.php',
@@ -38,6 +39,7 @@ $files = [
     '/routes/google_calendar_connect.php',
     '/routes/google_calendar_callback.php',
     '/routes/google_calendar_disconnect.php',
+    '/routes/google_calendar_sync.php',
     '/vend0r/phpmailer/src/PHPMailer.php',
 ];
 

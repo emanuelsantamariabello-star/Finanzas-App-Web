@@ -5,6 +5,7 @@ require_once '../../app/helpers/auth.php';
 require_once '../../app/helpers/csrf.php';
 require_once '../../app/helpers/financial_events.php';
 require_once '../../app/helpers/google_calendar_oauth.php';
+require_once '../../app/helpers/google_calendar_sync.php';
 requireAuth();
 require_once '../../app/config/database.php';
 
@@ -26,6 +27,7 @@ $eventsByDate = [];
 $calendarError = null;
 $googleCalendarIntegration = null;
 $googleCalendarError = null;
+$googleCalendarSyncSummary = null;
 
 try {
     $events = getFinancialEventsForRange($pdo, $userId, $calendarStart->format('Y-m-d'), $calendarEnd->format('Y-m-d'));
@@ -38,6 +40,9 @@ try {
 
 try {
     $googleCalendarIntegration = googleCalendarIntegrationByUser($pdo, $userId);
+    if ($googleCalendarIntegration) {
+        $googleCalendarSyncSummary = googleCalendarSyncSummary($pdo, (int) $googleCalendarIntegration['id']);
+    }
 } catch (PDOException $exception) {
     $googleCalendarError = 'La preparación de Google Calendar aún no está disponible.';
 }
@@ -121,7 +126,14 @@ include dirname(__DIR__) . '/layouts/header.php';
                     </div>
                     <p class="text-muted mb-0 small">
                         <?php if ($googleCalendarIntegration): ?>
-                            La autorización está activa. La sincronización de eventos se habilitará en la siguiente fase.
+                            <?php if (($googleCalendarSyncSummary['synced_count'] ?? 0) > 0): ?>
+                                <?= (int) $googleCalendarSyncSummary['synced_count'] ?> eventos sincronizados.
+                                <?php if (!empty($googleCalendarSyncSummary['last_synced_at'])): ?>
+                                    Última sincronización: <?= date('d/m/Y H:i', strtotime($googleCalendarSyncSummary['last_synced_at'])) ?>.
+                                <?php endif; ?>
+                            <?php else: ?>
+                                La autorización está activa. Puedes iniciar la primera sincronización manual.
+                            <?php endif; ?>
                         <?php else: ?>
                             Autoriza tu calendario para preparar la sincronización de eventos financieros.
                         <?php endif; ?>
@@ -133,13 +145,22 @@ include dirname(__DIR__) . '/layouts/header.php';
             </div>
 
             <?php if ($googleCalendarIntegration): ?>
-                <button type="button"
-                        class="btn btn-outline-danger google-calendar-action"
-                        data-bs-toggle="modal"
-                        data-bs-target="#disconnectGoogleCalendarModal">
-                    <i class="bi bi-link-45deg"></i>
-                    Desconectar
-                </button>
+                <div class="google-calendar-actions">
+                    <button type="button"
+                            class="btn btn-action-primary google-calendar-action"
+                            data-bs-toggle="modal"
+                            data-bs-target="#syncGoogleCalendarModal">
+                        <i class="bi bi-arrow-repeat"></i>
+                        Sincronizar eventos
+                    </button>
+                    <button type="button"
+                            class="btn btn-outline-danger google-calendar-action"
+                            data-bs-toggle="modal"
+                            data-bs-target="#disconnectGoogleCalendarModal">
+                        <i class="bi bi-link-45deg"></i>
+                        Desconectar
+                    </button>
+                </div>
             <?php else: ?>
                 <a href="<?= GOOGLE_CALENDAR_CONNECT_PATH ?>"
                    class="btn btn-action-primary google-calendar-action <?= (!googleCalendarOAuthIsConfigured() || $googleCalendarError) ? 'disabled' : '' ?>"
@@ -345,6 +366,28 @@ include dirname(__DIR__) . '/layouts/header.php';
 <?php endforeach; ?>
 
 <?php if ($googleCalendarIntegration): ?>
+    <div class="modal fade" id="syncGoogleCalendarModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Sincronizar con Google Calendar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Se crearán o actualizarán tus eventos financieros activos en el calendario principal de Google.</p>
+                    <small class="text-muted">La operación puede repetirse sin generar duplicados. En esta fase los cambios posteriores requieren pulsar nuevamente Sincronizar eventos.</small>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="POST" action="<?= GOOGLE_CALENDAR_SYNC_PATH ?>">
+                        <input type="hidden" name="_csrf" value="<?= csrfToken() ?>">
+                        <button type="submit" class="btn btn-primary">Sincronizar ahora</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="disconnectGoogleCalendarModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
