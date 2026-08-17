@@ -35,6 +35,8 @@ La versión **v1.2** incorpora registro e inicio de sesión con Google, mantenie
 - Registro de ingresos.
 - Registro de gastos.
 - Asociación de gastos a un ingreso.
+- Calendario financiero local para planificar pagos, ingresos esperados, cuotas, deudas, suscripciones y recordatorios.
+- Eventos financieros con recurrencias básicas y recordatorios internos.
 - Balance financiero.
 - Cálculo automático de totales.
 - Historial financiero.
@@ -55,6 +57,7 @@ La versión **v1.2** incorpora registro e inicio de sesión con Google, mantenie
 
 - Panel de notificaciones mediante campana en el navbar.
 - Recordatorios automáticos según la fecha habitual de ingresos del usuario.
+- Recordatorios derivados de eventos próximos del calendario financiero.
 - Notificaciones del navegador con permiso del usuario.
 - Actualización automática de notificaciones mediante endpoint sin caché.
 - Marcado local de notificaciones como leídas.
@@ -215,6 +218,12 @@ $_ENV['GOOGLE_CLIENT_ID'] = 'client-id-creado-en-google-cloud';
 
 El valor real debe permanecer únicamente en `.env.php`.
 
+Para cálculos de calendario y vencimientos, configurar:
+
+```
+$_ENV['APP_TIMEZONE'] = 'America/Bogota';
+```
+
 ## Configurar BASE_PATH
 
 Modificar:
@@ -271,12 +280,13 @@ Antes de desplegar:
 - Configurar `GOOGLE_CLIENT_ID` si se habilita registro e inicio de sesión con Google.
 - Verificar que la tabla `system_notifications` exista para el panel de novedades.
 
-Migraciones relevantes para v1.1:
+Migraciones relevantes:
 
 ```
 database/migrations/2026_07_19_add_expenses_reflection_type.sql
 database/migrations/2026_07_19_create_system_notifications.sql
 database/migrations/2026_08_08_create_auth_identities.sql
+database/migrations/2026_08_16_create_financial_events.sql
 ```
 
 Variable administrativa:
@@ -343,6 +353,13 @@ Las dependencias se encuentran integradas en el proyecto para facilitar su insta
 - Categorías personalizadas.
 - Presupuestos.
 - Metas financieras.
+
+## Financial Planning Core
+
+- Calendario financiero local.
+- Eventos financieros únicos y recurrentes.
+- Recordatorios internos derivados de eventos próximos.
+- Preparación de estructura para convertir eventos en ingresos o gastos en una fase posterior.
 
 ## v2.0
 

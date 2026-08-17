@@ -54,6 +54,19 @@ $notificationCount = $notificationCount ?? count($dashboardNotifications);
 
         <div class="d-flex align-items-center gap-2">
 
+            <!-- ===== CALENDARIO ===== -->
+            <a class="btn btn-outline-secondary d-none d-md-inline-flex align-items-center gap-2"
+               href="<?= CALENDAR_PATH ?>">
+                <i class="bi bi-calendar-event"></i>
+                Calendario
+            </a>
+
+            <a class="btn btn-outline-secondary d-md-none"
+               href="<?= CALENDAR_PATH ?>"
+               aria-label="Ver calendario financiero">
+                <i class="bi bi-calendar-event"></i>
+            </a>
+
             <!-- ===== REPORTES ===== -->
             <div class="dropdown">
 

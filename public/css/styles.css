@@ -598,6 +598,170 @@ body {
 }
 
 /* =========================
+   CALENDARIO FINANCIERO
+   ========================= */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-weekday {
+    background-color: rgba(37, 99, 235, .08);
+    color: var(--fa-blue-dark);
+    font-size: .82rem;
+    font-weight: 700;
+    padding: .75rem;
+    text-align: center;
+}
+
+.calendar-day {
+    border-top: 1px solid var(--border-soft);
+    min-height: 132px;
+    padding: .65rem;
+}
+
+.calendar-day:not(:nth-child(7n + 1)) {
+    border-left: 1px solid var(--border-soft);
+}
+
+.calendar-day-muted {
+    opacity: .48;
+}
+
+.calendar-day-today {
+    background-color: rgba(37, 99, 235, .08);
+}
+
+.calendar-day-number {
+    font-weight: 700;
+    margin-bottom: .5rem;
+}
+
+.calendar-empty {
+    color: var(--text-muted);
+    font-size: .78rem;
+}
+
+.calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.calendar-event {
+    border: 0;
+    border-left: 4px solid var(--fa-blue);
+    border-radius: .7rem;
+    display: block;
+    line-height: 1.2;
+    padding: .45rem .55rem;
+    text-align: left;
+    width: 100%;
+}
+
+.calendar-event-title,
+.calendar-event-amount {
+    display: block;
+}
+
+.calendar-event-title {
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.calendar-event-amount {
+    font-size: .75rem;
+    opacity: .85;
+}
+
+.calendar-event-pago,
+.calendar-event-gasto_programado,
+.calendar-event-cuota,
+.calendar-event-deuda,
+.calendar-event-suscripcion {
+    background-color: rgba(220, 53, 69, .10);
+    border-left-color: #dc3545;
+    color: #842029;
+}
+
+.calendar-event-ingreso_esperado {
+    background-color: rgba(25, 135, 84, .12);
+    border-left-color: #198754;
+    color: #0f5132;
+}
+
+.calendar-event-recordatorio,
+.calendar-event-otro {
+    background-color: rgba(37, 99, 235, .10);
+    border-left-color: var(--fa-blue);
+    color: var(--fa-blue-dark);
+}
+
+.calendar-event-status-completado {
+    opacity: .58;
+    text-decoration: line-through;
+}
+
+.calendar-event-status-cancelado {
+    opacity: .4;
+}
+
+.calendar-event-status-vencido {
+    background-color: rgba(255, 193, 7, .18);
+    border-left-color: #ffc107;
+    color: #7a5200;
+}
+
+[data-bs-theme="dark"] .calendar-weekday {
+    background-color: rgba(255,255,255,.05);
+    color: var(--text-main);
+}
+
+[data-bs-theme="dark"] .calendar-event-pago,
+[data-bs-theme="dark"] .calendar-event-gasto_programado,
+[data-bs-theme="dark"] .calendar-event-cuota,
+[data-bs-theme="dark"] .calendar-event-deuda,
+[data-bs-theme="dark"] .calendar-event-suscripcion {
+    background-color: rgba(248,113,113,.16);
+    color: #fecaca;
+}
+
+[data-bs-theme="dark"] .calendar-event-ingreso_esperado {
+    background-color: rgba(74,222,128,.16);
+    color: #bbf7d0;
+}
+
+[data-bs-theme="dark"] .calendar-event-recordatorio,
+[data-bs-theme="dark"] .calendar-event-otro {
+    background-color: rgba(96,165,250,.16);
+    color: #bfdbfe;
+}
+
+[data-bs-theme="dark"] .calendar-event-status-vencido {
+    background-color: rgba(250,204,21,.18);
+    color: #fde68a;
+}
+
+@media (max-width: 767.98px) {
+    .calendar-grid {
+        display: block;
+    }
+
+    .calendar-weekday {
+        display: none;
+    }
+
+    .calendar-day {
+        border-left: 0 !important;
+        min-height: auto;
+    }
+
+    .calendar-day-muted {
+        display: none;
+    }
+}
+
+/* =========================
    ESTADOS VACÍOS
    ========================= */
 .empty-state {
