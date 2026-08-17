@@ -26,8 +26,10 @@ $calendarError = null;
 
 try {
     $events = getFinancialEventsForRange($pdo, $userId, $calendarStart->format('Y-m-d'), $calendarEnd->format('Y-m-d'));
+    $incomeOptions = getFinancialEventIncomeOptions($pdo, $userId);
 } catch (PDOException $exception) {
     $events = [];
+    $incomeOptions = [];
     $calendarError = 'El calendario financiero aún no tiene la migración aplicada.';
 }
 
@@ -245,6 +247,8 @@ include dirname(__DIR__) . '/layouts/header.php';
                         </div>
                     </div>
                 </form>
+
+                <?php include __DIR__ . '/partials/occurrence_actions.php'; ?>
 
                 <form method="POST" action="<?= WEB_ROUTE ?>" class="px-3 pb-3"
                       onsubmit="return confirm('¿Eliminar este evento financiero?');">
