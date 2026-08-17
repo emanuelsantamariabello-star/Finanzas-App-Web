@@ -44,6 +44,9 @@ $acciones_post = [
     'create_financial_event',
     'update_financial_event',
     'delete_financial_event',
+    'update_financial_occurrence_status',
+    'register_financial_occurrence_income',
+    'register_financial_occurrence_expense',
     'create_system_notification',
     'toggle_system_notification',
     'delete_system_notification',
@@ -92,6 +95,9 @@ $financialEventActions = [
     'create_financial_event' => 'handleCreateFinancialEvent',
     'update_financial_event' => 'handleUpdateFinancialEvent',
     'delete_financial_event' => 'handleDeleteFinancialEvent',
+    'update_financial_occurrence_status' => 'handleUpdateFinancialOccurrenceStatus',
+    'register_financial_occurrence_income' => 'handleRegisterFinancialOccurrenceIncome',
+    'register_financial_occurrence_expense' => 'handleRegisterFinancialOccurrenceExpense',
 ];
 
 if (isset($financialEventActions[$action])) {
@@ -618,6 +624,93 @@ function handleDeleteFinancialEvent(PDO $pdo): void
     } catch (PDOException $exception) {
         redirectError('No se pudo eliminar el evento.', CALENDAR_PATH);
     }
+}
+
+function handleUpdateFinancialOccurrenceStatus(PDO $pdo): void
+{
+    requireLogin();
+
+    try {
+        updateFinancialEventOccurrenceStatus(
+            $pdo,
+            (int) $_SESSION['user_id'],
+            (int) post('event_id'),
+            (string) post('occurrence_date', ''),
+            (string) post('status', '')
+        );
+
+        redirectFinancialCalendar('Estado de la ocurrencia actualizado');
+    } catch (InvalidArgumentException | RuntimeException $exception) {
+        redirectFinancialCalendar($exception->getMessage(), true);
+    } catch (PDOException $exception) {
+        redirectFinancialCalendar('No se pudo actualizar la ocurrencia.', true);
+    }
+}
+
+function handleRegisterFinancialOccurrenceIncome(PDO $pdo): void
+{
+    requireLogin();
+
+    try {
+        registerFinancialEventOccurrenceAsIncome(
+            $pdo,
+            (int) $_SESSION['user_id'],
+            (int) post('event_id'),
+            (string) post('occurrence_date', ''),
+            [
+                'amount' => post('amount'),
+                'income_type' => post('income_type', 'otro'),
+                'movement_date' => post('movement_date', ''),
+                'note' => post('note', ''),
+            ]
+        );
+
+        redirectFinancialCalendar('Ingreso registrado desde el calendario');
+    } catch (InvalidArgumentException | RuntimeException $exception) {
+        redirectFinancialCalendar($exception->getMessage(), true);
+    } catch (PDOException $exception) {
+        redirectFinancialCalendar('No se pudo registrar el ingreso.', true);
+    }
+}
+
+function handleRegisterFinancialOccurrenceExpense(PDO $pdo): void
+{
+    requireLogin();
+
+    try {
+        registerFinancialEventOccurrenceAsExpense(
+            $pdo,
+            (int) $_SESSION['user_id'],
+            (int) post('event_id'),
+            (string) post('occurrence_date', ''),
+            [
+                'income_id' => post('income_id'),
+                'amount' => post('amount'),
+                'movement_date' => post('movement_date', ''),
+                'reflection_type' => post('reflection_type', ''),
+                'note' => post('note', ''),
+            ]
+        );
+
+        redirectFinancialCalendar('Gasto registrado desde el calendario');
+    } catch (InvalidArgumentException | RuntimeException $exception) {
+        redirectFinancialCalendar($exception->getMessage(), true);
+    } catch (PDOException $exception) {
+        redirectFinancialCalendar('No se pudo registrar el gasto.', true);
+    }
+}
+
+function redirectFinancialCalendar(string $message, bool $isError = false): void
+{
+    $month = (string) post('return_month', date('Y-m'));
+    if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
+        $month = date('Y-m');
+    }
+
+    redirect(CALENDAR_PATH, [
+        'mes' => $month,
+        $isError ? 'error' : 'success' => $message,
+    ]);
 }
 
 /* ======================================================

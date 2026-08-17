@@ -37,6 +37,7 @@ La versión **v1.2** incorpora registro e inicio de sesión con Google, mantenie
 - Asociación de gastos a un ingreso.
 - Calendario financiero local para planificar pagos, ingresos esperados, cuotas, deudas, suscripciones y recordatorios.
 - Eventos financieros con recurrencias básicas y recordatorios internos.
+- Confirmación individual de ocurrencias y conversión segura en ingresos o gastos reales.
 - Balance financiero.
 - Cálculo automático de totales.
 - Historial financiero.
@@ -359,7 +360,9 @@ Las dependencias se encuentran integradas en el proyecto para facilitar su insta
 - Calendario financiero local.
 - Eventos financieros únicos y recurrentes.
 - Recordatorios internos derivados de eventos próximos.
-- Preparación de estructura para convertir eventos en ingresos o gastos en una fase posterior.
+- Estados independientes por ocurrencia del calendario.
+- Conversión transaccional de ingresos esperados y gastos programados en movimientos reales.
+- Prevención de movimientos duplicados mediante vínculos por ocurrencia.
 
 ## v2.0
 

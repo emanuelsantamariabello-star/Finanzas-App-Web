@@ -25,6 +25,14 @@ const FINANCIAL_EVENT_RECURRENCES = [
     'yearly',
 ];
 
+const FINANCIAL_EVENT_EXPENSE_TYPES = [
+    'pago',
+    'gasto_programado',
+    'cuota',
+    'deuda',
+    'suscripcion',
+];
+
 function financialEventTypeLabels(): array
 {
     return [
@@ -373,9 +381,13 @@ function getFinancialEventsForRange(PDO $pdo, int $userId, string $startDate, st
         'end_date' => $endDate,
     ]);
 
+    $storedOccurrences = getStoredFinancialEventOccurrences($pdo, $userId, $startDate, $endDate);
     $events = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $event) {
-        $events = array_merge($events, expandFinancialEventOccurrences($event, $startDate, $endDate));
+        foreach (expandFinancialEventOccurrences($event, $startDate, $endDate) as $occurrence) {
+            $key = $occurrence['id'] . ':' . $occurrence['occurrence_date'];
+            $events[] = applyStoredFinancialEventOccurrence($occurrence, $storedOccurrences[$key] ?? null);
+        }
     }
 
     usort($events, static function (array $a, array $b): int {
@@ -383,6 +395,53 @@ function getFinancialEventsForRange(PDO $pdo, int $userId, string $startDate, st
     });
 
     return $events;
+}
+
+function getStoredFinancialEventOccurrences(PDO $pdo, int $userId, string $startDate, string $endDate): array
+{
+    $stmt = $pdo->prepare("
+        SELECT id, event_id, occurrence_date, status, income_id, expense_id, completed_at
+        FROM financial_event_occurrences
+        WHERE user_id = :user_id
+          AND occurrence_date BETWEEN :start_date AND :end_date
+    ");
+    $stmt->execute([
+        'user_id' => $userId,
+        'start_date' => $startDate,
+        'end_date' => $endDate,
+    ]);
+
+    $occurrences = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $occurrence) {
+        $occurrences[$occurrence['event_id'] . ':' . $occurrence['occurrence_date']] = $occurrence;
+    }
+
+    return $occurrences;
+}
+
+function applyStoredFinancialEventOccurrence(array $occurrence, ?array $storedOccurrence): array
+{
+    $occurrence['occurrence_id'] = null;
+    $occurrence['income_id'] = null;
+    $occurrence['expense_id'] = null;
+    $occurrence['completed_at'] = null;
+
+    if (!$storedOccurrence) {
+        return $occurrence;
+    }
+
+    $status = $storedOccurrence['status'];
+    if ($status === 'pendiente' && $occurrence['occurrence_date'] < date('Y-m-d')) {
+        $status = 'vencido';
+    }
+
+    $occurrence['occurrence_id'] = (int) $storedOccurrence['id'];
+    $occurrence['status'] = $status;
+    $occurrence['income_id'] = $storedOccurrence['income_id'] !== null ? (int) $storedOccurrence['income_id'] : null;
+    $occurrence['expense_id'] = $storedOccurrence['expense_id'] !== null ? (int) $storedOccurrence['expense_id'] : null;
+    $occurrence['completed_at'] = $storedOccurrence['completed_at'];
+
+    return $occurrence;
 }
 
 function expandFinancialEventOccurrences(array $event, string $startDate, string $endDate): array
@@ -473,6 +532,325 @@ function financialEventOccurrenceFromEvent(array $event, DateTimeImmutable $date
         'reminder_days_before' => $event['reminder_days_before'] !== null ? (int) $event['reminder_days_before'] : null,
         'is_recurring' => $event['recurrence_type'] !== 'none',
     ];
+}
+
+function getFinancialEventIncomeOptions(PDO $pdo, int $userId): array
+{
+    $stmt = $pdo->prepare("
+        SELECT
+            i.id,
+            i.type,
+            i.income_date,
+            i.amount,
+            i.amount - COALESCE(SUM(e.amount), 0) AS available_amount
+        FROM incomes i
+        LEFT JOIN expenses e ON e.income_id = i.id
+        WHERE i.user_id = :user_id
+        GROUP BY i.id, i.type, i.income_date, i.amount
+        ORDER BY i.income_date DESC, i.id DESC
+        LIMIT 100
+    ");
+    $stmt->execute(['user_id' => $userId]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function updateFinancialEventOccurrenceStatus(
+    PDO $pdo,
+    int $userId,
+    int $eventId,
+    string $occurrenceDate,
+    string $status
+): void {
+    if (!in_array($status, ['pendiente', 'completado', 'cancelado'], true)) {
+        throw new InvalidArgumentException('Estado de ocurrencia inválido.');
+    }
+
+    runFinancialEventTransaction($pdo, static function () use ($pdo, $userId, $eventId, $occurrenceDate, $status): void {
+        $event = getFinancialEventForUpdate($pdo, $userId, $eventId);
+        validateFinancialEventOccurrenceDate($event, $occurrenceDate);
+        $occurrence = ensureFinancialEventOccurrenceForUpdate($pdo, $userId, $eventId, $occurrenceDate);
+
+        if ($occurrence['income_id'] !== null || $occurrence['expense_id'] !== null) {
+            throw new RuntimeException('La ocurrencia ya está vinculada a un movimiento y no puede cambiarse manualmente.');
+        }
+
+        $stmt = $pdo->prepare("
+            UPDATE financial_event_occurrences
+            SET status = :status,
+                completed_at = :completed_at
+            WHERE id = :id
+              AND user_id = :user_id
+        ");
+        $stmt->execute([
+            'status' => $status,
+            'completed_at' => $status === 'completado' ? date('Y-m-d H:i:s') : null,
+            'id' => $occurrence['id'],
+            'user_id' => $userId,
+        ]);
+    });
+}
+
+function registerFinancialEventOccurrenceAsIncome(
+    PDO $pdo,
+    int $userId,
+    int $eventId,
+    string $occurrenceDate,
+    array $data
+): int {
+    return runFinancialEventTransaction($pdo, static function () use ($pdo, $userId, $eventId, $occurrenceDate, $data): int {
+        $event = getFinancialEventForUpdate($pdo, $userId, $eventId);
+        validateFinancialEventOccurrenceDate($event, $occurrenceDate);
+
+        if ($event['event_type'] !== 'ingreso_esperado') {
+            throw new InvalidArgumentException('Solo los ingresos esperados pueden registrarse como ingreso.');
+        }
+
+        $occurrence = ensureFinancialEventOccurrenceForUpdate($pdo, $userId, $eventId, $occurrenceDate);
+        validateFinancialEventOccurrenceIsAvailable($occurrence);
+
+        $amount = normalizeFinancialMovementAmount($data['amount'] ?? null);
+        $incomeType = (string) ($data['income_type'] ?? 'otro');
+        $movementDate = (string) ($data['movement_date'] ?? $occurrenceDate);
+        $note = trim((string) ($data['note'] ?? ''));
+
+        if (!in_array($incomeType, ['quincenal', 'mensual', 'otro'], true)) {
+            throw new InvalidArgumentException('Tipo de ingreso inválido.');
+        }
+
+        if (!isValidFinancialEventDate($movementDate)) {
+            throw new InvalidArgumentException('Fecha de ingreso inválida.');
+        }
+
+        $stmt = $pdo->prepare("
+            INSERT INTO incomes (user_id, amount, type, income_date, note)
+            VALUES (:user_id, :amount, :type, :income_date, :note)
+        ");
+        $stmt->execute([
+            'user_id' => $userId,
+            'amount' => $amount,
+            'type' => $incomeType,
+            'income_date' => $movementDate,
+            'note' => $note !== '' ? $note : $event['title'],
+        ]);
+
+        $incomeId = (int) $pdo->lastInsertId();
+        completeFinancialEventOccurrenceWithMovement($pdo, (int) $occurrence['id'], $userId, $incomeId, null);
+
+        return $incomeId;
+    });
+}
+
+function registerFinancialEventOccurrenceAsExpense(
+    PDO $pdo,
+    int $userId,
+    int $eventId,
+    string $occurrenceDate,
+    array $data
+): int {
+    return runFinancialEventTransaction($pdo, static function () use ($pdo, $userId, $eventId, $occurrenceDate, $data): int {
+        $event = getFinancialEventForUpdate($pdo, $userId, $eventId);
+        validateFinancialEventOccurrenceDate($event, $occurrenceDate);
+
+        if (!in_array($event['event_type'], FINANCIAL_EVENT_EXPENSE_TYPES, true)) {
+            throw new InvalidArgumentException('Este tipo de evento no puede registrarse como gasto.');
+        }
+
+        $occurrence = ensureFinancialEventOccurrenceForUpdate($pdo, $userId, $eventId, $occurrenceDate);
+        validateFinancialEventOccurrenceIsAvailable($occurrence);
+
+        $incomeId = (int) ($data['income_id'] ?? 0);
+        $amount = normalizeFinancialMovementAmount($data['amount'] ?? null);
+        $movementDate = (string) ($data['movement_date'] ?? $occurrenceDate);
+        $reflectionType = (string) ($data['reflection_type'] ?? '');
+        $note = trim((string) ($data['note'] ?? ''));
+
+        if (!isValidFinancialEventDate($movementDate)) {
+            throw new InvalidArgumentException('Fecha de gasto inválida.');
+        }
+
+        if (!in_array($reflectionType, ['necesario', 'gusto'], true)) {
+            throw new InvalidArgumentException('Clasificación de gasto inválida.');
+        }
+
+        $incomeStmt = $pdo->prepare("
+            SELECT id
+            FROM incomes
+            WHERE id = :id
+              AND user_id = :user_id
+            LIMIT 1
+            FOR UPDATE
+        ");
+        $incomeStmt->execute([
+            'id' => $incomeId,
+            'user_id' => $userId,
+        ]);
+
+        if (!$incomeStmt->fetchColumn()) {
+            throw new RuntimeException('Selecciona un ingreso válido para registrar el gasto.');
+        }
+
+        $stmt = $pdo->prepare("
+            INSERT INTO expenses (income_id, amount, expense_date, note, reflection_type)
+            VALUES (:income_id, :amount, :expense_date, :note, :reflection_type)
+        ");
+        $stmt->execute([
+            'income_id' => $incomeId,
+            'amount' => $amount,
+            'expense_date' => $movementDate,
+            'note' => $note !== '' ? $note : $event['title'],
+            'reflection_type' => $reflectionType,
+        ]);
+
+        $expenseId = (int) $pdo->lastInsertId();
+        completeFinancialEventOccurrenceWithMovement($pdo, (int) $occurrence['id'], $userId, null, $expenseId);
+
+        return $expenseId;
+    });
+}
+
+function getFinancialEventForUpdate(PDO $pdo, int $userId, int $eventId): array
+{
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM financial_events
+        WHERE id = :id
+          AND user_id = :user_id
+        LIMIT 1
+        FOR UPDATE
+    ");
+    $stmt->execute([
+        'id' => $eventId,
+        'user_id' => $userId,
+    ]);
+    $event = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$event) {
+        throw new RuntimeException('Evento no encontrado o no autorizado.');
+    }
+
+    return $event;
+}
+
+function validateFinancialEventOccurrenceDate(array $event, string $occurrenceDate): void
+{
+    if (!isValidFinancialEventDate($occurrenceDate)) {
+        throw new InvalidArgumentException('Fecha de ocurrencia inválida.');
+    }
+
+    $occurrences = expandFinancialEventOccurrences($event, $occurrenceDate, $occurrenceDate);
+    if (count($occurrences) !== 1 || $occurrences[0]['occurrence_date'] !== $occurrenceDate) {
+        throw new RuntimeException('La fecha seleccionada no pertenece a este evento.');
+    }
+}
+
+function ensureFinancialEventOccurrenceForUpdate(
+    PDO $pdo,
+    int $userId,
+    int $eventId,
+    string $occurrenceDate
+): array {
+    $stmt = $pdo->prepare("
+        INSERT IGNORE INTO financial_event_occurrences (event_id, user_id, occurrence_date, status)
+        VALUES (:event_id, :user_id, :occurrence_date, 'pendiente')
+    ");
+    $stmt->execute([
+        'event_id' => $eventId,
+        'user_id' => $userId,
+        'occurrence_date' => $occurrenceDate,
+    ]);
+
+    $stmt = $pdo->prepare("
+        SELECT id, event_id, user_id, occurrence_date, status, income_id, expense_id, completed_at
+        FROM financial_event_occurrences
+        WHERE event_id = :event_id
+          AND user_id = :user_id
+          AND occurrence_date = :occurrence_date
+        LIMIT 1
+        FOR UPDATE
+    ");
+    $stmt->execute([
+        'event_id' => $eventId,
+        'user_id' => $userId,
+        'occurrence_date' => $occurrenceDate,
+    ]);
+    $occurrence = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$occurrence) {
+        throw new RuntimeException('No se pudo preparar la ocurrencia financiera.');
+    }
+
+    return $occurrence;
+}
+
+function validateFinancialEventOccurrenceIsAvailable(array $occurrence): void
+{
+    if ($occurrence['income_id'] !== null || $occurrence['expense_id'] !== null) {
+        throw new RuntimeException('Esta ocurrencia ya fue registrada como movimiento.');
+    }
+
+    if ($occurrence['status'] === 'cancelado') {
+        throw new RuntimeException('Reactiva la ocurrencia antes de registrarla como movimiento.');
+    }
+}
+
+function normalizeFinancialMovementAmount($amount): float
+{
+    if (!is_numeric($amount) || (float) $amount <= 0) {
+        throw new InvalidArgumentException('El monto del movimiento debe ser mayor que cero.');
+    }
+
+    return round((float) $amount, 2);
+}
+
+function completeFinancialEventOccurrenceWithMovement(
+    PDO $pdo,
+    int $occurrenceId,
+    int $userId,
+    ?int $incomeId,
+    ?int $expenseId
+): void {
+    $stmt = $pdo->prepare("
+        UPDATE financial_event_occurrences
+        SET status = 'completado',
+            income_id = :income_id,
+            expense_id = :expense_id,
+            completed_at = :completed_at
+        WHERE id = :id
+          AND user_id = :user_id
+    ");
+    $stmt->execute([
+        'income_id' => $incomeId,
+        'expense_id' => $expenseId,
+        'completed_at' => date('Y-m-d H:i:s'),
+        'id' => $occurrenceId,
+        'user_id' => $userId,
+    ]);
+}
+
+function runFinancialEventTransaction(PDO $pdo, callable $callback)
+{
+    $ownsTransaction = !$pdo->inTransaction();
+
+    if ($ownsTransaction) {
+        $pdo->beginTransaction();
+    }
+
+    try {
+        $result = $callback();
+
+        if ($ownsTransaction) {
+            $pdo->commit();
+        }
+
+        return $result;
+    } catch (Throwable $exception) {
+        if ($ownsTransaction && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $exception;
+    }
 }
 
 function getUpcomingFinancialEventNotifications(PDO $pdo, int $userId, int $daysAhead = 7): array
