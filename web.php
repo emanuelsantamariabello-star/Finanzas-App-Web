@@ -10,6 +10,7 @@ require_once __DIR__ . '/app/helpers/validator.php';
 require_once __DIR__ . '/app/helpers/csrf.php';
 require_once __DIR__ . '/app/helpers/admin.php';
 require_once __DIR__ . '/app/helpers/google_auth.php';
+require_once __DIR__ . '/app/helpers/financial_events.php';
 require_once __DIR__ . '/app/config/database.php';
 
 /* ======================================================
@@ -40,6 +41,9 @@ $acciones_post = [
     'create_expense',
     'update_expense',
     'delete_expense',
+    'create_financial_event',
+    'update_financial_event',
+    'delete_financial_event',
     'create_system_notification',
     'toggle_system_notification',
     'delete_system_notification',
@@ -80,6 +84,18 @@ $expenseActions = [
 
 if (isset($expenseActions[$action])) {
     call_user_func($expenseActions[$action], $pdo);
+    exit;
+}
+
+// CALENDARIO FINANCIERO
+$financialEventActions = [
+    'create_financial_event' => 'handleCreateFinancialEvent',
+    'update_financial_event' => 'handleUpdateFinancialEvent',
+    'delete_financial_event' => 'handleDeleteFinancialEvent',
+];
+
+if (isset($financialEventActions[$action])) {
+    call_user_func($financialEventActions[$action], $pdo);
     exit;
 }
 
@@ -552,6 +568,56 @@ function deleteExpense(PDO $pdo) {
         'income_id' => $income_id,
         'success'   => 'Gasto eliminado'
     ]);
+}
+
+/* ======================================================
+   FUNCIONES — CALENDARIO FINANCIERO
+   ====================================================== */
+
+function handleCreateFinancialEvent(PDO $pdo): void
+{
+    requireLogin();
+
+    try {
+        createFinancialEvent($pdo, (int) $_SESSION['user_id'], $_POST);
+        redirect(CALENDAR_PATH, ['success' => 'Evento financiero creado']);
+    } catch (InvalidArgumentException $exception) {
+        redirectError($exception->getMessage(), CALENDAR_PATH);
+    } catch (PDOException $exception) {
+        redirectError('No se pudo crear el evento. Verifica que la migración del calendario esté aplicada.', CALENDAR_PATH);
+    }
+}
+
+function handleUpdateFinancialEvent(PDO $pdo): void
+{
+    requireLogin();
+
+    $eventId = (int) post('id');
+
+    try {
+        updateFinancialEvent($pdo, (int) $_SESSION['user_id'], $eventId, $_POST);
+        redirect(CALENDAR_PATH, ['success' => 'Evento financiero actualizado']);
+    } catch (InvalidArgumentException | RuntimeException $exception) {
+        redirectError($exception->getMessage(), CALENDAR_PATH);
+    } catch (PDOException $exception) {
+        redirectError('No se pudo actualizar el evento.', CALENDAR_PATH);
+    }
+}
+
+function handleDeleteFinancialEvent(PDO $pdo): void
+{
+    requireLogin();
+
+    $eventId = (int) post('id');
+
+    try {
+        deleteFinancialEvent($pdo, (int) $_SESSION['user_id'], $eventId);
+        redirect(CALENDAR_PATH, ['success' => 'Evento financiero eliminado']);
+    } catch (RuntimeException $exception) {
+        redirectError($exception->getMessage(), CALENDAR_PATH);
+    } catch (PDOException $exception) {
+        redirectError('No se pudo eliminar el evento.', CALENDAR_PATH);
+    }
 }
 
 /* ======================================================

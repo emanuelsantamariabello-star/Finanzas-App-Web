@@ -38,6 +38,13 @@ if (file_exists($env_file)) {
     require_once $env_file;
 }
 
+$appTimezone = $_ENV['APP_TIMEZONE'] ?? 'America/Bogota';
+if (!in_array($appTimezone, timezone_identifiers_list(), true)) {
+    $appTimezone = 'America/Bogota';
+}
+date_default_timezone_set($appTimezone);
+define('APP_TIMEZONE', $appTimezone);
+
 /* ======================================================
    ENTORNO
    ====================================================== */
@@ -121,6 +128,7 @@ define('INCOME_CREATE_PATH', BASE_PATH . '/views/incomes/create.php');
 define('INCOME_EDIT_PATH', BASE_PATH . '/views/incomes/edit.php');
 define('REPORTS_PATH', BASE_PATH . '/views/reports/index.php');
 define('REPORT_GRAPHS_PATH', BASE_PATH . '/views/reports/graficas.php');
+define('CALENDAR_PATH', BASE_PATH . '/views/calendar/index.php');
 define('ADMIN_NOTIFICATIONS_PATH', BASE_PATH . '/views/admin/notifications.php');
 define('REGISTER_PATH', BASE_PATH . '/views/auth/register.php');
 /* ======================================================

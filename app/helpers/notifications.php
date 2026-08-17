@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/financial_events.php';
+
 function getLatestIncomeDate(PDO $pdo, int $userId): ?string
 {
     $stmt = $pdo->prepare("
@@ -65,6 +67,12 @@ function getMonthlyPaymentReminderDate(string $latestIncomeDate, DateTimeImmutab
 function getDashboardNotifications(PDO $pdo, int $userId): array
 {
     $notifications = getActiveSystemNotifications($pdo);
+
+    try {
+        $notifications = array_merge($notifications, getUpcomingFinancialEventNotifications($pdo, $userId));
+    } catch (PDOException $exception) {
+    }
+
     $latestIncomeDate = getLatestIncomeDate($pdo, $userId);
 
     if (!$latestIncomeDate) {

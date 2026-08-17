@@ -28,6 +28,7 @@ $_ENV['SMTP_FROM_EMAIL'] = 'correo@tu-dominio.com';
 $_ENV['SMTP_FROM_NAME'] = 'Finanzas App';
 $_ENV['APP_URL'] = 'https://tu-dominio.com';
 $_ENV['APP_BASE_PATH'] = '';
+$_ENV['APP_TIMEZONE'] = 'America/Bogota';
 
 // Configuracion de Google Sign-In
 // Client ID publico creado en Google Cloud para este dominio/origen.

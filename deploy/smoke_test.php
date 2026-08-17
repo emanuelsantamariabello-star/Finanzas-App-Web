@@ -28,7 +28,9 @@ $files = [
     '/public/css/styles.css',
     '/public/js/main.js',
     '/app/config/app.php',
+    '/app/helpers/financial_events.php',
     '/app/helpers/mailer.php',
+    '/views/calendar/index.php',
     '/vend0r/phpmailer/src/PHPMailer.php',
 ];
 
@@ -76,6 +78,16 @@ if (!file_exists($envFile)) {
             } else {
                 echo " -> Columna expenses.reflection_type: MISSING\n";
                 $ok = false;
+            }
+
+            foreach (['financial_events', 'financial_event_occurrences'] as $table) {
+                $stmt = $pdo->query("SHOW TABLES LIKE " . $pdo->quote($table));
+                if ($stmt->fetchColumn()) {
+                    echo " -> Tabla {$table}: OK\n";
+                } else {
+                    echo " -> Tabla {$table}: MISSING\n";
+                    $ok = false;
+                }
             }
         } catch (PDOException $exception) {
             echo " -> Conexion a la base de datos: ERROR\n";
