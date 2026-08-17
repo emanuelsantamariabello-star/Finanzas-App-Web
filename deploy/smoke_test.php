@@ -29,8 +29,10 @@ $files = [
     '/public/js/main.js',
     '/app/config/app.php',
     '/app/helpers/financial_events.php',
+    '/app/helpers/financial_accounts.php',
     '/app/helpers/mailer.php',
     '/views/calendar/index.php',
+    '/views/accounts/index.php',
     '/views/calendar/partials/occurrence_actions.php',
     '/vend0r/phpmailer/src/PHPMailer.php',
 ];
@@ -81,7 +83,7 @@ if (!file_exists($envFile)) {
                 $ok = false;
             }
 
-            foreach (['financial_events', 'financial_event_monthly_rules', 'financial_event_occurrences'] as $table) {
+            foreach (['financial_events', 'financial_event_monthly_rules', 'financial_event_occurrences', 'financial_accounts'] as $table) {
                 $stmt = $pdo->query("SHOW TABLES LIKE " . $pdo->quote($table));
                 if ($stmt->fetchColumn()) {
                     echo " -> Tabla {$table}: OK\n";

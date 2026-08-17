@@ -185,6 +185,12 @@ $notificationCount = $notificationCount ?? count($dashboardNotifications);
                     </li>
 
                     <li>
+                        <a class="dropdown-item" href="<?= ACCOUNTS_PATH ?>">
+                            <i class="bi bi-wallet2 me-2"></i>Mis cuentas
+                        </a>
+                    </li>
+
+                    <li>
                         <a class="dropdown-item"
                            href="<?= BASE_PATH ?>/views/profile/edit.php">
                             ✏️ Editar perfil

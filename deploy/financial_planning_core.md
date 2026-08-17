@@ -74,6 +74,8 @@ La aplicación usa este timezone para cálculos de calendario, vencimientos y re
 
 Google Calendar debe implementarse como integración OAuth independiente de `auth_identities`.
 
+Las cuentas financieras manuales se implementan mediante `financial_accounts` sin modificar todavía ingresos ni gastos. La futura relación con movimientos deberá ser opcional y compatible con los registros existentes.
+
 La tabla `auth_identities` se mantiene solo para identidad e inicio de sesión con Google.
 
 Para integración futura se recomienda agregar una tabla separada tipo `external_integrations` y otra tabla de sincronización tipo `calendar_sync`.
