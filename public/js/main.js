@@ -84,6 +84,30 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* =========================
+   CAMPOS DE RECURRENCIA MENSUAL
+   ========================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".js-financial-recurrence-type").forEach(function (recurrenceSelect) {
+        const form = recurrenceSelect.closest("form");
+        if (!form) {
+            return;
+        }
+
+        const monthlyFields = form.querySelectorAll("[data-monthly-recurrence-field]");
+        const updateMonthlyFields = function () {
+            const isMonthly = recurrenceSelect.value === "monthly";
+            monthlyFields.forEach(function (field) {
+                field.classList.toggle("d-none", !isMonthly);
+            });
+        };
+
+        recurrenceSelect.addEventListener("change", updateMonthlyFields);
+        updateMonthlyFields();
+    });
+});
+
+/* =========================
    TOGGLE PASSWORD (GLOBAL)
    ========================= */
 function togglePassword(inputId, btn) {

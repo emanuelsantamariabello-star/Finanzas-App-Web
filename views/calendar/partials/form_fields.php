@@ -10,6 +10,7 @@ $financialEvent = $financialEvent ?? [
     'status' => 'pendiente',
     'recurrence_type' => 'none',
     'recurrence_interval' => 1,
+    'recurrence_month_days' => '',
     'recurrence_is_last_day' => 0,
     'recurrence_ends_at' => '',
     'reminder_days_before' => '',
@@ -19,6 +20,7 @@ $typeLabels = $typeLabels ?? financialEventTypeLabels();
 $statusLabels = $statusLabels ?? financialEventStatusLabels();
 $recurrenceLabels = $recurrenceLabels ?? financialEventRecurrenceLabels();
 $fieldSuffix = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) ($financialEventFieldSuffix ?? ($financialEvent['id'] ?? 'new')));
+$isMonthlyRecurrence = ($financialEvent['recurrence_type'] ?? 'none') === 'monthly';
 ?>
 
 <div class="row g-3">
@@ -90,7 +92,7 @@ $fieldSuffix = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) ($financialEventFie
 
     <div class="col-12 col-md-3">
         <label class="form-label fw-semibold">Recurrencia</label>
-        <select name="recurrence_type" class="form-select">
+        <select name="recurrence_type" class="form-select js-financial-recurrence-type">
             <?php foreach ($recurrenceLabels as $value => $label): ?>
                 <option value="<?= e($value) ?>" <?= ($financialEvent['recurrence_type'] ?? 'none') === $value ? 'selected' : '' ?>>
                     <?= e($label) ?>
@@ -129,8 +131,21 @@ $fieldSuffix = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) ($financialEventFie
                value="<?= e($financialEvent['recurrence_ends_at'] ?? '') ?>">
     </div>
 
-    <div class="col-12 col-md-6 d-flex align-items-end">
-        <div class="form-check mb-2">
+    <div class="col-12 col-md-6 <?= $isMonthlyRecurrence ? '' : 'd-none' ?>"
+         data-monthly-recurrence-field>
+        <label class="form-label fw-semibold">Días del mes</label>
+        <input type="text"
+               name="recurrence_month_days"
+               class="form-control"
+               inputmode="numeric"
+               placeholder="Ej: 1, 15, 30"
+               value="<?= e($financialEvent['recurrence_month_days'] ?? '') ?>">
+        <div class="form-text">Solo para recurrencia mensual. Separa varios días con comas.</div>
+    </div>
+
+    <div class="col-12 <?= $isMonthlyRecurrence ? '' : 'd-none' ?>"
+         data-monthly-recurrence-field>
+        <div class="form-check financial-monthly-last-day">
             <input class="form-check-input"
                    type="checkbox"
                    name="recurrence_is_last_day"
@@ -138,7 +153,7 @@ $fieldSuffix = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) ($financialEventFie
                    id="lastDay<?= e($fieldSuffix) ?>"
                    <?= !empty($financialEvent['recurrence_is_last_day']) ? 'checked' : '' ?>>
             <label class="form-check-label" for="lastDay<?= e($fieldSuffix) ?>">
-                Si es mensual, usar último día del mes
+                Agregar también el último día de cada mes
             </label>
         </div>
     </div>

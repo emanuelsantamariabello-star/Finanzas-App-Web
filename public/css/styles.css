@@ -777,6 +777,13 @@ body {
     padding: 1rem;
 }
 
+.financial-monthly-last-day {
+    background-color: rgba(37, 99, 235, .05);
+    border: 1px solid var(--border-soft);
+    border-radius: .85rem;
+    padding: .8rem 1rem .8rem 2.5rem;
+}
+
 .financial-occurrence-action-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-soft);
@@ -854,6 +861,10 @@ body {
     background-color: rgba(96, 165, 250, .06);
 }
 
+[data-bs-theme="dark"] .financial-monthly-last-day {
+    background-color: rgba(96, 165, 250, .08);
+}
+
 @media (max-width: 767.98px) {
     .calendar-page-actions {
         width: 100%;
@@ -878,6 +889,10 @@ body {
 
     .calendar-day-muted {
         display: none;
+    }
+
+    .financial-monthly-last-day {
+        width: 100%;
     }
 }
 

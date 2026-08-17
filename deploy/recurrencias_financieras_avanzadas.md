@@ -44,12 +44,14 @@ El intervalo permitido por la aplicación está entre 1 y 999. Cuando un evento 
 
 La confirmación nativa del navegador fue reemplazada por un modal integrado al calendario. El mensaje identifica el evento y advierte que se eliminarán todas sus ocurrencias, manteniendo la eliminación definitiva únicamente dentro del formulario confirmado.
 
-## Subfase siguiente - Varias fechas mensuales
+## Subfase 2 - Varias fechas mensuales
 
-Una regla como "día 15 y último día de cada mes" no debe almacenarse duplicando eventos ni agregando una lista de días en texto.
+Una regla como "día 15 y último día de cada mes" se almacena mediante la tabla hija `financial_event_monthly_rules`, sin duplicar eventos ni guardar listas dentro de una columna.
 
-La opción recomendada es una tabla hija para reglas mensuales asociadas al evento. Esta tabla permitiría guardar varias reglas ordenadas y mantener un único evento financiero como origen.
+La interfaz permite ingresar varios días separados por comas y agregar el último día. El backend valida, deduplica y expande las fechas según el intervalo mensual configurado.
 
-La siguiente subfase deberá definir y migrar esa tabla, adaptar el generador de ocurrencias y conservar compatibilidad con `recurrence_day_of_month` y `recurrence_is_last_day`.
+La migración `database/migrations/2026_08_17_create_financial_event_monthly_rules.sql` conserva compatibilidad con `recurrence_day_of_month` y `recurrence_is_last_day`.
 
-Google Calendar permanece fuera de esta fase. Su integración se evaluará cuando el calendario local y todas sus reglas recurrentes estén estabilizados.
+Los detalles técnicos, validaciones y pasos de despliegue están en `deploy/reglas_mensuales_multiples.md`.
+
+Google Calendar permanece fuera de esta fase. Su integración se evaluará después de cerrar las cuentas financieras manuales y la auditoría responsive del núcleo local.
