@@ -365,6 +365,7 @@ Las dependencias se encuentran integradas en el proyecto para facilitar su insta
 - Estados independientes por ocurrencia del calendario.
 - Conversión transaccional de ingresos esperados y gastos programados en movimientos reales.
 - Prevención de movimientos duplicados mediante vínculos por ocurrencia.
+- Confirmación visual mediante modal antes de eliminar eventos financieros.
 
 ## v2.0
 

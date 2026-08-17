@@ -38,6 +38,11 @@ El intervalo permitido por la aplicación está entre 1 y 999. Cuando un evento 
 - El intervalo se valida nuevamente en backend.
 - No se aceptan decimales, valores negativos, cero ni valores superiores a 999.
 - La fecha final de recurrencia continúa limitando la expansión de ocurrencias.
+- La eliminación de un evento financiero requiere confirmación mediante un modal antes de enviar la solicitud protegida por CSRF.
+
+## Interfaz de eliminación
+
+La confirmación nativa del navegador fue reemplazada por un modal integrado al calendario. El mensaje identifica el evento y advierte que se eliminarán todas sus ocurrencias, manteniendo la eliminación definitiva únicamente dentro del formulario confirmado.
 
 ## Subfase siguiente - Varias fechas mensuales
 
