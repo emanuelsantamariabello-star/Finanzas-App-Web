@@ -220,6 +220,12 @@ $_ENV['GOOGLE_CLIENT_ID'] = 'client-id-creado-en-google-cloud';
 
 El valor real debe permanecer únicamente en `.env.php`.
 
+La preparación para Google Calendar usa credenciales OAuth y almacenamiento separados del inicio de sesión. Su alcance, migración y variables están documentados en:
+
+```
+deploy/preparacion_google_calendar.md
+```
+
 Para cálculos de calendario y vencimientos, configurar:
 
 ```
@@ -289,6 +295,7 @@ database/migrations/2026_07_19_add_expenses_reflection_type.sql
 database/migrations/2026_07_19_create_system_notifications.sql
 database/migrations/2026_08_08_create_auth_identities.sql
 database/migrations/2026_08_16_create_financial_events.sql
+database/migrations/2026_08_17_prepare_google_calendar.sql
 ```
 
 Variable administrativa:

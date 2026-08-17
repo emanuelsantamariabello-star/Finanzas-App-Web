@@ -30,6 +30,7 @@ $files = [
     '/app/config/app.php',
     '/app/helpers/financial_events.php',
     '/app/helpers/financial_accounts.php',
+    '/app/helpers/google_calendar_oauth.php',
     '/app/helpers/mailer.php',
     '/views/calendar/index.php',
     '/views/accounts/index.php',
@@ -83,7 +84,7 @@ if (!file_exists($envFile)) {
                 $ok = false;
             }
 
-            foreach (['financial_events', 'financial_event_monthly_rules', 'financial_event_occurrences', 'financial_accounts'] as $table) {
+            foreach (['financial_events', 'financial_event_monthly_rules', 'financial_event_occurrences', 'financial_accounts', 'external_integrations', 'calendar_event_sync'] as $table) {
                 $stmt = $pdo->query("SHOW TABLES LIKE " . $pdo->quote($table));
                 if ($stmt->fetchColumn()) {
                     echo " -> Tabla {$table}: OK\n";
@@ -136,6 +137,9 @@ echo ' - main.js: ' . (file_exists($js) ? 'FOUND' : 'MISSING') . "\n";
 if (!file_exists($css) || !file_exists($js)) {
     $ok = false;
 }
+
+require_once $root . '/app/helpers/google_calendar_oauth.php';
+echo ' - Google Calendar OAuth: ' . (googleCalendarOAuthIsConfigured() ? 'CONFIGURADO' : 'PENDIENTE DE CREDENCIALES') . "\n";
 
 echo "\nResumen: " . ($ok ? "OK - Listo para desplegar" : "FALTAN ELEMENTOS - Revisa lo indicado") . "\n";
 
