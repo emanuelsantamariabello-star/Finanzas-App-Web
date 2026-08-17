@@ -62,7 +62,7 @@ include dirname(__DIR__) . '/layouts/header.php';
                 </div>
 
                 <!-- Botón -->
-                <div class="mt-4 d-flex justify-content-end">
+                <div class="mt-4 d-flex flex-column flex-sm-row justify-content-sm-end">
                     <button type="submit" class="btn btn-primary px-4">
                         📥 Generar PDF
                     </button>

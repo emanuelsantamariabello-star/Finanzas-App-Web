@@ -956,6 +956,10 @@ body {
 }
 
 @media (max-width: 575.98px) {
+    .btn-dashboard-return {
+        width: 100%;
+    }
+
     .calendar-month-navigation {
         gap: .65rem;
     }

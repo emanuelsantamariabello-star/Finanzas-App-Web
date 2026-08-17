@@ -89,7 +89,7 @@ include __DIR__ . '/../layouts/header.php';
                value="<?= e($income['note']) ?>">
     </div>
 
-    <div class="d-flex justify-content-between mt-4">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between gap-2 mt-4">
       <a href="<?= DASHBOARD_PATH ?>"
          class="btn btn-action-secondary btn-dashboard-return">
           <i class="bi bi-house-door"></i>
