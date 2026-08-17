@@ -70,7 +70,7 @@ include dirname(__DIR__) . '/layouts/header.php';
         </div>
 
         <div class="calendar-page-actions">
-            <a class="btn btn-action-secondary d-inline-flex align-items-center justify-content-center gap-2"
+            <a class="btn btn-action-secondary btn-dashboard-return"
                href="<?= DASHBOARD_PATH ?>">
                 <i class="bi bi-house-door"></i>
                 <span>Volver al dashboard</span>

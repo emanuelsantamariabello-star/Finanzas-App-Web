@@ -55,8 +55,9 @@ include dirname(__DIR__) . '/layouts/header.php';
 
         <div class="d-flex justify-content-between mt-4">
           <a href="<?= DASHBOARD_PATH ?>"
-             class="btn btn-outline-secondary">
-              ⬅️ Cancelar
+             class="btn btn-action-secondary btn-dashboard-return">
+              <i class="bi bi-house-door"></i>
+              <span>Volver al dashboard</span>
           </a>
 
           <button type="submit" class="btn btn-primary px-4">

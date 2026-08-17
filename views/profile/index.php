@@ -71,8 +71,9 @@ include dirname(__DIR__) . '/layouts/header.php';
     <div class="mt-4 d-flex flex-column flex-sm-row gap-2">
 
        <a href="<?= DASHBOARD_PATH ?>"
-          class="btn btn-outline-secondary">
-           ⬅ Volver
+          class="btn btn-action-secondary btn-dashboard-return">
+           <i class="bi bi-house-door"></i>
+           <span>Volver al dashboard</span>
        </a>
 
        <a href="<?= PROFILE_EDIT_PATH ?>"
