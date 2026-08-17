@@ -7,6 +7,7 @@ Esta fase agrega el calendario financiero local de Finanzas App Web sin integrar
 Incluye:
 
 - Vista mensual de calendario.
+- Navegación mensual responsiva con acceso directo de regreso al dashboard.
 - Creación, edición y eliminación de eventos financieros.
 - Tipos de evento: pago, ingreso esperado, gasto programado, cuota, deuda, suscripción, recordatorio y otro.
 - Recurrencias básicas: diaria, semanal, mensual y anual.

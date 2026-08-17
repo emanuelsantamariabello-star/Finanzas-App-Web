@@ -69,12 +69,21 @@ include dirname(__DIR__) . '/layouts/header.php';
             </p>
         </div>
 
-        <button class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#createFinancialEventModal"
-                <?= $calendarError ? 'disabled' : '' ?>>
-            ➕ Nuevo evento
-        </button>
+        <div class="calendar-page-actions">
+            <a class="btn btn-action-secondary d-inline-flex align-items-center justify-content-center gap-2"
+               href="<?= DASHBOARD_PATH ?>">
+                <i class="bi bi-house-door"></i>
+                <span>Volver al dashboard</span>
+            </a>
+
+            <button class="btn btn-action-primary d-inline-flex align-items-center justify-content-center gap-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#createFinancialEventModal"
+                    <?= $calendarError ? 'disabled' : '' ?>>
+                <i class="bi bi-plus-lg"></i>
+                <span>Nuevo evento</span>
+            </button>
+        </div>
     </div>
 
     <?php if ($calendarError): ?>
@@ -86,20 +95,26 @@ include dirname(__DIR__) . '/layouts/header.php';
 
     <div class="card shadow-sm border-0 rounded-4 mb-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center gap-2">
-                <a class="btn btn-outline-secondary"
-                   href="<?= CALENDAR_PATH ?>?mes=<?= e($previousMonth) ?>">
-                    ←
+            <div class="calendar-month-navigation">
+                <a class="calendar-month-button"
+                   href="<?= CALENDAR_PATH ?>?mes=<?= e($previousMonth) ?>"
+                   aria-label="Ver mes anterior"
+                   title="Mes anterior">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    <span>Mes anterior</span>
                 </a>
 
-                <div class="text-center">
+                <div class="calendar-month-title text-center">
                     <h4 class="fw-bold mb-0"><?= e($monthTitle) ?></h4>
                     <small class="text-muted">Vista mensual</small>
                 </div>
 
-                <a class="btn btn-outline-secondary"
-                   href="<?= CALENDAR_PATH ?>?mes=<?= e($nextMonth) ?>">
-                    →
+                <a class="calendar-month-button"
+                   href="<?= CALENDAR_PATH ?>?mes=<?= e($nextMonth) ?>"
+                   aria-label="Ver mes siguiente"
+                   title="Mes siguiente">
+                    <span>Mes siguiente</span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
                 </a>
             </div>
         </div>
