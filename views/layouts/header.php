@@ -67,13 +67,6 @@ $notificationCount = $notificationCount ?? count($dashboardNotifications);
                 <i class="bi bi-calendar-event"></i>
             </a>
 
-            <!-- ===== CUENTAS ===== -->
-            <a class="btn btn-outline-secondary d-none d-lg-inline-flex align-items-center gap-2"
-               href="<?= ACCOUNTS_PATH ?>">
-                <i class="bi bi-wallet2"></i>
-                Cuentas
-            </a>
-
             <!-- ===== REPORTES ===== -->
             <div class="dropdown">
 
