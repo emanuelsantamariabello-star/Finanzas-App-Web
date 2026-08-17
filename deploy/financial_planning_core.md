@@ -15,11 +15,13 @@ Incluye:
 - Estados almacenados: pendiente, completado y cancelado.
 - Estado vencido derivado dinámicamente cuando el evento pendiente ya pasó.
 - Recordatorios derivados para el panel de notificaciones.
+- Estados independientes para cada ocurrencia recurrente.
+- Conversión de ingresos esperados en ingresos reales.
+- Conversión de pagos y gastos programados en gastos asociados a un ingreso existente.
+- Vínculo entre la ocurrencia y el movimiento generado.
 
 No incluye todavía:
 
-- Conversión de eventos a ingresos reales.
-- Conversión de eventos a gastos reales.
 - Cuentas financieras manuales.
 - Google Calendar.
 - Integraciones bancarias.
@@ -56,6 +58,7 @@ La aplicación usa este timezone para cálculos de calendario, vencimientos y re
 - Migración: `database/migrations/2026_08_16_create_financial_events.sql`
 - Navegación: `views/layouts/header.php`
 - Acciones POST: `web.php`
+- Acciones por ocurrencia: `views/calendar/partials/occurrence_actions.php`
 - Estilos: `public/css/styles.css`
 
 ## Seguridad

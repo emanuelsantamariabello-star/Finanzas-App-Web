@@ -31,6 +31,7 @@ $files = [
     '/app/helpers/financial_events.php',
     '/app/helpers/mailer.php',
     '/views/calendar/index.php',
+    '/views/calendar/partials/occurrence_actions.php',
     '/vend0r/phpmailer/src/PHPMailer.php',
 ];
 
