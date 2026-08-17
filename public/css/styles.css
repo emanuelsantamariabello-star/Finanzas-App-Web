@@ -966,20 +966,60 @@ body {
         width: 100%;
     }
 
-    .calendar-grid {
-        display: block;
-    }
-
     .calendar-weekday {
-        display: none;
+        display: block;
+        font-size: .68rem;
+        padding: .55rem .1rem;
     }
 
     .calendar-day {
-        border-left: 0 !important;
-        min-height: auto;
+        min-height: 78px;
+        overflow: hidden;
+        padding: .35rem .25rem;
     }
 
     .calendar-day-muted {
+        display: block;
+        opacity: .32;
+    }
+
+    .calendar-day-number {
+        font-size: .78rem;
+        margin-bottom: .25rem;
+    }
+
+    .calendar-day-today .calendar-day-number {
+        align-items: center;
+        background-color: var(--fa-blue);
+        border-radius: 50%;
+        color: #ffffff;
+        display: inline-flex;
+        height: 24px;
+        justify-content: center;
+        width: 24px;
+    }
+
+    .calendar-events {
+        gap: .2rem;
+    }
+
+    .calendar-event {
+        border-left: 0;
+        border-radius: .35rem;
+        padding: .22rem .25rem;
+    }
+
+    .calendar-event-title {
+        display: -webkit-box;
+        font-size: .6rem;
+        line-height: 1.15;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .calendar-event-amount {
         display: none;
     }
 
@@ -1021,6 +1061,10 @@ body {
 
     .calendar-month-title small {
         font-size: .75rem;
+    }
+
+    .calendar-grid {
+        border-radius: 1rem !important;
     }
 }
 

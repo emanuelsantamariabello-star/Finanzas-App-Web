@@ -224,6 +224,7 @@ La preparación para Google Calendar usa credenciales OAuth y almacenamiento sep
 
 ```
 deploy/preparacion_google_calendar.md
+deploy/despliegue_google_calendar_produccion.md
 ```
 
 Para cálculos de calendario y vencimientos, configurar:
