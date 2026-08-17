@@ -6,7 +6,7 @@
 
 CREATE TABLE IF NOT EXISTS financial_events (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id INT UNSIGNED NOT NULL,
+  user_id INT NOT NULL,
   title VARCHAR(150) NOT NULL,
   event_type ENUM('pago', 'ingreso_esperado', 'gasto_programado', 'cuota', 'deuda', 'suscripcion', 'recordatorio', 'otro') NOT NULL DEFAULT 'otro',
   amount DECIMAL(12,2) NULL,
@@ -49,11 +49,11 @@ CREATE TABLE IF NOT EXISTS financial_event_monthly_rules (
 CREATE TABLE IF NOT EXISTS financial_event_occurrences (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   event_id INT UNSIGNED NOT NULL,
-  user_id INT UNSIGNED NOT NULL,
+  user_id INT NOT NULL,
   occurrence_date DATE NOT NULL,
   status ENUM('pendiente', 'completado', 'cancelado') NOT NULL DEFAULT 'pendiente',
-  income_id INT UNSIGNED NULL,
-  expense_id INT UNSIGNED NULL,
+  income_id INT NULL,
+  expense_id INT NULL,
   completed_at DATETIME NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
@@ -87,7 +87,7 @@ WHERE recurrence_type = 'monthly';
 
 CREATE TABLE IF NOT EXISTS financial_accounts (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id INT UNSIGNED NOT NULL,
+  user_id INT NOT NULL,
   name VARCHAR(100) NOT NULL,
   type ENUM('banco', 'billetera_digital', 'efectivo', 'ahorro', 'credito', 'otra') NOT NULL DEFAULT 'otra',
   institution VARCHAR(100) NULL,
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS financial_accounts (
 
 CREATE TABLE IF NOT EXISTS external_integrations (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id INT UNSIGNED NOT NULL,
+  user_id INT NOT NULL,
   provider VARCHAR(50) NOT NULL,
   provider_account_id VARCHAR(255) NULL,
   provider_account_email VARCHAR(255) NULL,

@@ -34,21 +34,18 @@ database/releases/2026_08_17_calendario_google_produccion.sql
 
 Este archivo consolida las migraciones en el orden correcto.
 
-Como alternativa, ejecutar únicamente las migraciones que todavía no existan en producción y respetar este orden:
-
-```text
-1. database/migrations/2026_08_16_create_financial_events.sql
-2. database/migrations/2026_08_17_create_financial_event_monthly_rules.sql
-3. database/migrations/2026_08_17_create_financial_accounts.sql
-4. database/migrations/2026_08_17_prepare_google_calendar.sql
-```
+Este archivo está adaptado al esquema histórico de producción, donde los campos
+`users.id`, `incomes.id` y `expenses.id` son `INT` firmados. No ejecutar en
+producción las migraciones individuales de desarrollo, porque sus claves foráneas
+fueron creadas para el esquema local con IDs `UNSIGNED`.
 
 La última migración crea:
 
 - `external_integrations`
 - `calendar_event_sync`
 
-Todas usan `CREATE TABLE IF NOT EXISTS`; no eliminan tablas ni movimientos existentes.
+Las tablas nuevas usan `CREATE TABLE IF NOT EXISTS`; no eliminan tablas ni
+movimientos existentes.
 
 ## Variables de producción
 

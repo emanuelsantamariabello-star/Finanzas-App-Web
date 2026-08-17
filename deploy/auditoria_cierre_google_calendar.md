@@ -18,6 +18,10 @@ La integración queda apta para despliegue controlado después de completar las 
 ## Integridad
 
 - Las migraciones son aditivas.
+- El SQL consolidado de producción fue validado contra `users.id`, `incomes.id`
+  y `expenses.id` definidos como `INT` firmado e `InnoDB`, igual que en Hostinger.
+- Las claves internas de las tablas nuevas conservan `INT UNSIGNED`; únicamente
+  las referencias al esquema histórico usan `INT` firmado.
 - `calendar_event_sync` evita duplicados por integración y evento local.
 - La sincronización manual actualiza el evento remoto ya relacionado.
 - Fallos externos no eliminan ni revierten eventos financieros locales.
