@@ -35,6 +35,9 @@ $files = [
     '/views/calendar/index.php',
     '/views/accounts/index.php',
     '/views/calendar/partials/occurrence_actions.php',
+    '/routes/google_calendar_connect.php',
+    '/routes/google_calendar_callback.php',
+    '/routes/google_calendar_disconnect.php',
     '/vend0r/phpmailer/src/PHPMailer.php',
 ];
 

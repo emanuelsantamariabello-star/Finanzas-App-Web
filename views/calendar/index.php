@@ -4,6 +4,7 @@ require_once '../../app/config/app.php';
 require_once '../../app/helpers/auth.php';
 require_once '../../app/helpers/csrf.php';
 require_once '../../app/helpers/financial_events.php';
+require_once '../../app/helpers/google_calendar_oauth.php';
 requireAuth();
 require_once '../../app/config/database.php';
 
@@ -23,6 +24,8 @@ $nextMonth = $monthStart->modify('+1 month')->format('Y-m');
 $today = date('Y-m-d');
 $eventsByDate = [];
 $calendarError = null;
+$googleCalendarIntegration = null;
+$googleCalendarError = null;
 
 try {
     $events = getFinancialEventsForRange($pdo, $userId, $calendarStart->format('Y-m-d'), $calendarEnd->format('Y-m-d'));
@@ -31,6 +34,12 @@ try {
     $events = [];
     $incomeOptions = [];
     $calendarError = 'El calendario financiero aún no tiene la migración aplicada.';
+}
+
+try {
+    $googleCalendarIntegration = googleCalendarIntegrationByUser($pdo, $userId);
+} catch (PDOException $exception) {
+    $googleCalendarError = 'La preparación de Google Calendar aún no está disponible.';
 }
 
 foreach ($events as $event) {
@@ -94,6 +103,53 @@ include dirname(__DIR__) . '/layouts/header.php';
             Ejecuta la migración <code>database/migrations/2026_08_16_create_financial_events.sql</code>.
         </div>
     <?php endif; ?>
+
+    <section class="google-calendar-connection card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-start gap-3">
+                <span class="google-calendar-icon" aria-hidden="true">
+                    <i class="bi bi-google"></i>
+                </span>
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h5 class="fw-bold mb-0">Google Calendar</h5>
+                        <?php if ($googleCalendarIntegration): ?>
+                            <span class="badge rounded-pill text-bg-success">Conectado</span>
+                        <?php else: ?>
+                            <span class="badge rounded-pill text-bg-secondary">Sin conectar</span>
+                        <?php endif; ?>
+                    </div>
+                    <p class="text-muted mb-0 small">
+                        <?php if ($googleCalendarIntegration): ?>
+                            La autorización está activa. La sincronización de eventos se habilitará en la siguiente fase.
+                        <?php else: ?>
+                            Autoriza tu calendario para preparar la sincronización de eventos financieros.
+                        <?php endif; ?>
+                    </p>
+                    <?php if ($googleCalendarError): ?>
+                        <div class="text-danger small mt-2"><?= e($googleCalendarError) ?></div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <?php if ($googleCalendarIntegration): ?>
+                <button type="button"
+                        class="btn btn-outline-danger google-calendar-action"
+                        data-bs-toggle="modal"
+                        data-bs-target="#disconnectGoogleCalendarModal">
+                    <i class="bi bi-link-45deg"></i>
+                    Desconectar
+                </button>
+            <?php else: ?>
+                <a href="<?= GOOGLE_CALENDAR_CONNECT_PATH ?>"
+                   class="btn btn-action-primary google-calendar-action <?= (!googleCalendarOAuthIsConfigured() || $googleCalendarError) ? 'disabled' : '' ?>"
+                   <?= (!googleCalendarOAuthIsConfigured() || $googleCalendarError) ? 'aria-disabled="true" tabindex="-1"' : '' ?>>
+                    <i class="bi bi-google"></i>
+                    Conectar Google Calendar
+                </a>
+            <?php endif; ?>
+        </div>
+    </section>
 
     <div class="card shadow-sm border-0 rounded-4 mb-4">
         <div class="card-body">
@@ -287,5 +343,29 @@ include dirname(__DIR__) . '/layouts/header.php';
         </div>
     </div>
 <?php endforeach; ?>
+
+<?php if ($googleCalendarIntegration): ?>
+    <div class="modal fade" id="disconnectGoogleCalendarModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-danger">Desconectar Google Calendar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">¿Seguro que deseas desconectar Google Calendar?</p>
+                    <small class="text-muted">Se revocará la autorización y se eliminarán los tokens guardados. Tus eventos financieros locales no se modificarán.</small>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="POST" action="<?= GOOGLE_CALENDAR_DISCONNECT_PATH ?>">
+                        <input type="hidden" name="_csrf" value="<?= csrfToken() ?>">
+                        <button type="submit" class="btn btn-danger">Desconectar definitivamente</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
 <?php include dirname(__DIR__) . '/layouts/footer.php'; ?>

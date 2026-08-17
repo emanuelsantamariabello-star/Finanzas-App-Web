@@ -4,11 +4,17 @@
 
 Esta fase prepara la persistencia, configuración y protección de credenciales necesarias para integrar Google Calendar posteriormente.
 
+Esta fase incluye ahora:
+
+- Botón único de conexión dentro del calendario financiero.
+- Autorización OAuth con validación `state` y PKCE.
+- Callback para canjear el código de autorización.
+- Persistencia cifrada de access token y refresh token.
+- Estado visual conectado o sin conectar.
+- Desconexión con confirmación y revocación en Google.
+
 Todavía no incluye:
 
-- Botón para conectar o desconectar Google Calendar.
-- Redirección al consentimiento de Google.
-- Callback OAuth.
 - Creación, actualización o eliminación de eventos en Google Calendar.
 - Sincronización automática.
 
@@ -77,13 +83,21 @@ No deben registrarse hasta confirmar que esas rutas coinciden con la ubicación 
 - Eliminación en cascada al borrar el usuario o evento local.
 - Estado y último error disponibles para diagnóstico sin exponer tokens.
 
+## Flujo implementado
+
+1. El usuario inicia la conexión desde el calendario financiero.
+2. La aplicación genera `state`, verificador PKCE y desafío SHA-256 con vigencia de 10 minutos.
+3. Google solicita consentimiento para `calendar.events` y acceso offline.
+4. El callback valida usuario, sesión, `state` y PKCE.
+5. Los tokens se cifran antes de almacenarse en `external_integrations`.
+6. La desconexión requiere POST, CSRF y confirmación visual.
+7. Google revoca el token antes de que la aplicación elimine la integración local.
+
 ## Siguiente fase
 
-Con las credenciales confirmadas se implementará:
+Después de validar la conexión OAuth se implementará:
 
-1. Inicio de autorización con `state` para protección CSRF.
-2. Callback y canje del código por tokens.
-3. Solicitud de acceso offline para obtener refresh token.
-4. Conectar y desconectar desde Cuentas o Calendario, sin duplicar accesos.
-5. Sincronización manual inicial de eventos.
-6. Tratamiento de expiración, revocación y reintentos.
+1. Renovación controlada del access token mediante refresh token.
+2. Sincronización manual inicial de eventos.
+3. Tratamiento de expiración, revocación y reintentos.
+4. Sincronización automática en una fase posterior.

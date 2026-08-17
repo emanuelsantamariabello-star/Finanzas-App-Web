@@ -606,6 +606,31 @@ body {
     gap: .75rem;
 }
 
+.google-calendar-icon {
+    align-items: center;
+    background-color: rgba(37, 99, 235, .1);
+    border-radius: 14px;
+    color: var(--fa-blue);
+    display: inline-flex;
+    flex: 0 0 48px;
+    font-size: 1.35rem;
+    height: 48px;
+    justify-content: center;
+}
+
+.google-calendar-action {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: .5rem;
+    justify-content: center;
+}
+
+[data-bs-theme="dark"] .google-calendar-icon {
+    background-color: rgba(96, 165, 250, .12);
+    color: #93c5fd;
+}
+
 .btn-dashboard-return {
     align-items: center;
     display: inline-flex;
@@ -923,6 +948,10 @@ body {
 
     .calendar-page-actions .btn {
         flex: 1 1 190px;
+    }
+
+    .google-calendar-action {
+        width: 100%;
     }
 
     .calendar-grid {
