@@ -136,6 +136,54 @@ function normalizeFinancialEventRecurrenceInterval($interval): int
     return $interval;
 }
 
+function normalizeFinancialEventMonthlyRules(array $data, string $eventDate, string $recurrenceType): array
+{
+    if ($recurrenceType !== 'monthly') {
+        return [];
+    }
+
+    $rawDays = $data['recurrence_month_days'] ?? [];
+    if (is_string($rawDays)) {
+        $rawDays = preg_split('/[\s,;]+/', trim($rawDays), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    }
+
+    if (!is_array($rawDays)) {
+        throw new InvalidArgumentException('Los días mensuales no tienen un formato válido.');
+    }
+
+    $fixedDays = [];
+    foreach ($rawDays as $rawDay) {
+        $rawDay = trim((string) $rawDay);
+        if ($rawDay === '') {
+            continue;
+        }
+
+        if (!ctype_digit($rawDay)) {
+            throw new InvalidArgumentException('Los días mensuales deben ser números enteros entre 1 y 31.');
+        }
+
+        $day = (int) $rawDay;
+        if ($day < 1 || $day > 31) {
+            throw new InvalidArgumentException('Cada día mensual debe estar entre 1 y 31.');
+        }
+
+        $fixedDays[$day] = $day;
+    }
+
+    ksort($fixedDays);
+    $rules = array_values($fixedDays);
+
+    if (!empty($data['recurrence_is_last_day'])) {
+        $rules[] = 0;
+    }
+
+    if ($rules === []) {
+        $rules[] = (int) date('j', strtotime($eventDate));
+    }
+
+    return $rules;
+}
+
 function createFinancialEvent(PDO $pdo, int $userId, array $data): int
 {
     $title = trim((string) ($data['title'] ?? ''));
@@ -149,7 +197,6 @@ function createFinancialEvent(PDO $pdo, int $userId, array $data): int
     $recurrenceInterval = normalizeFinancialEventRecurrenceInterval($data['recurrence_interval'] ?? 1);
     $recurrenceEndsAt = trim((string) ($data['recurrence_ends_at'] ?? ''));
     $reminderDaysBefore = normalizeFinancialEventReminder($data['reminder_days_before'] ?? null);
-    $recurrenceIsLastDay = !empty($data['recurrence_is_last_day']) ? 1 : 0;
 
     if ($title === '') {
         throw new InvalidArgumentException('El título del evento es obligatorio.');
@@ -187,64 +234,86 @@ function createFinancialEvent(PDO $pdo, int $userId, array $data): int
         throw new InvalidArgumentException('La recurrencia no puede terminar antes de la fecha inicial.');
     }
 
-    $recurrenceDayOfMonth = null;
-    if ($recurrenceType === 'monthly' && !$recurrenceIsLastDay) {
-        $recurrenceDayOfMonth = (int) date('j', strtotime($eventDate));
-    }
+    $monthlyRules = normalizeFinancialEventMonthlyRules($data, $eventDate, $recurrenceType);
+    $fixedMonthlyRules = array_values(array_filter($monthlyRules, static fn (int $day): bool => $day > 0));
+    $recurrenceDayOfMonth = $fixedMonthlyRules[0] ?? null;
+    $recurrenceIsLastDay = in_array(0, $monthlyRules, true) ? 1 : 0;
 
-    $stmt = $pdo->prepare("
-        INSERT INTO financial_events (
-            user_id,
-            title,
-            event_type,
-            amount,
-            event_date,
-            event_time,
-            description,
-            status,
-            recurrence_type,
-            recurrence_interval,
-            recurrence_day_of_month,
-            recurrence_is_last_day,
-            recurrence_ends_at,
-            reminder_days_before
-        )
-        VALUES (
-            :user_id,
-            :title,
-            :event_type,
-            :amount,
-            :event_date,
-            :event_time,
-            :description,
-            :status,
-            :recurrence_type,
-            :recurrence_interval,
-            :recurrence_day_of_month,
-            :recurrence_is_last_day,
-            :recurrence_ends_at,
-            :reminder_days_before
-        )
-    ");
+    return runFinancialEventTransaction($pdo, static function () use (
+        $pdo,
+        $userId,
+        $title,
+        $eventType,
+        $amount,
+        $eventDate,
+        $eventTime,
+        $description,
+        $status,
+        $recurrenceType,
+        $recurrenceInterval,
+        $recurrenceDayOfMonth,
+        $recurrenceIsLastDay,
+        $recurrenceEndsAt,
+        $reminderDaysBefore,
+        $monthlyRules
+    ): int {
+        $stmt = $pdo->prepare("
+            INSERT INTO financial_events (
+                user_id,
+                title,
+                event_type,
+                amount,
+                event_date,
+                event_time,
+                description,
+                status,
+                recurrence_type,
+                recurrence_interval,
+                recurrence_day_of_month,
+                recurrence_is_last_day,
+                recurrence_ends_at,
+                reminder_days_before
+            )
+            VALUES (
+                :user_id,
+                :title,
+                :event_type,
+                :amount,
+                :event_date,
+                :event_time,
+                :description,
+                :status,
+                :recurrence_type,
+                :recurrence_interval,
+                :recurrence_day_of_month,
+                :recurrence_is_last_day,
+                :recurrence_ends_at,
+                :reminder_days_before
+            )
+        ");
 
-    $stmt->execute([
-        'user_id' => $userId,
-        'title' => $title,
-        'event_type' => $eventType,
-        'amount' => $amount,
-        'event_date' => $eventDate,
-        'event_time' => $eventTime !== '' ? $eventTime : null,
-        'description' => $description !== '' ? $description : null,
-        'status' => $status,
-        'recurrence_type' => $recurrenceType,
-        'recurrence_interval' => $recurrenceInterval,
-        'recurrence_day_of_month' => $recurrenceDayOfMonth,
-        'recurrence_is_last_day' => $recurrenceIsLastDay,
-        'recurrence_ends_at' => $recurrenceEndsAt !== '' ? $recurrenceEndsAt : null,
-        'reminder_days_before' => $reminderDaysBefore,
-    ]);
+        $stmt->execute([
+            'user_id' => $userId,
+            'title' => $title,
+            'event_type' => $eventType,
+            'amount' => $amount,
+            'event_date' => $eventDate,
+            'event_time' => $eventTime !== '' ? $eventTime : null,
+            'description' => $description !== '' ? $description : null,
+            'status' => $status,
+            'recurrence_type' => $recurrenceType,
+            'recurrence_interval' => $recurrenceInterval,
+            'recurrence_day_of_month' => $recurrenceDayOfMonth,
+            'recurrence_is_last_day' => $recurrenceIsLastDay,
+            'recurrence_ends_at' => $recurrenceEndsAt !== '' ? $recurrenceEndsAt : null,
+            'reminder_days_before' => $reminderDaysBefore,
+        ]);
 
-    return (int) $pdo->lastInsertId();
+        $eventId = (int) $pdo->lastInsertId();
+        replaceFinancialEventMonthlyRules($pdo, $eventId, $monthlyRules);
+
+        return $eventId;
+    });
 }
 
 function updateFinancialEvent(PDO $pdo, int $userId, int $eventId, array $data): void
@@ -262,7 +331,6 @@ function updateFinancialEvent(PDO $pdo, int $userId, int $eventId, array $data):
     $recurrenceInterval = normalizeFinancialEventRecurrenceInterval($data['recurrence_interval'] ?? 1);
     $recurrenceEndsAt = trim((string) ($data['recurrence_ends_at'] ?? ''));
     $reminderDaysBefore = normalizeFinancialEventReminder($data['reminder_days_before'] ?? null);
-    $recurrenceIsLastDay = !empty($data['recurrence_is_last_day']) ? 1 : 0;
 
     if ($title === '') {
         throw new InvalidArgumentException('El título del evento es obligatorio.');
@@ -300,47 +368,69 @@ function updateFinancialEvent(PDO $pdo, int $userId, int $eventId, array $data):
         throw new InvalidArgumentException('La recurrencia no puede terminar antes de la fecha inicial.');
     }
 
-    $recurrenceDayOfMonth = null;
-    if ($recurrenceType === 'monthly' && !$recurrenceIsLastDay) {
-        $recurrenceDayOfMonth = (int) date('j', strtotime($eventDate));
-    }
+    $monthlyRules = normalizeFinancialEventMonthlyRules($data, $eventDate, $recurrenceType);
+    $fixedMonthlyRules = array_values(array_filter($monthlyRules, static fn (int $day): bool => $day > 0));
+    $recurrenceDayOfMonth = $fixedMonthlyRules[0] ?? null;
+    $recurrenceIsLastDay = in_array(0, $monthlyRules, true) ? 1 : 0;
 
-    $stmt = $pdo->prepare("
-        UPDATE financial_events
-        SET title = :title,
-            event_type = :event_type,
-            amount = :amount,
-            event_date = :event_date,
-            event_time = :event_time,
-            description = :description,
-            status = :status,
-            recurrence_type = :recurrence_type,
-            recurrence_interval = :recurrence_interval,
-            recurrence_day_of_month = :recurrence_day_of_month,
-            recurrence_is_last_day = :recurrence_is_last_day,
-            recurrence_ends_at = :recurrence_ends_at,
-            reminder_days_before = :reminder_days_before
-        WHERE id = :id
-          AND user_id = :user_id
-    ");
+    runFinancialEventTransaction($pdo, static function () use (
+        $pdo,
+        $eventId,
+        $userId,
+        $title,
+        $eventType,
+        $amount,
+        $eventDate,
+        $eventTime,
+        $description,
+        $status,
+        $recurrenceType,
+        $recurrenceInterval,
+        $recurrenceDayOfMonth,
+        $recurrenceIsLastDay,
+        $recurrenceEndsAt,
+        $reminderDaysBefore,
+        $monthlyRules
+    ): void {
+        $stmt = $pdo->prepare("
+            UPDATE financial_events
+            SET title = :title,
+                event_type = :event_type,
+                amount = :amount,
+                event_date = :event_date,
+                event_time = :event_time,
+                description = :description,
+                status = :status,
+                recurrence_type = :recurrence_type,
+                recurrence_interval = :recurrence_interval,
+                recurrence_day_of_month = :recurrence_day_of_month,
+                recurrence_is_last_day = :recurrence_is_last_day,
+                recurrence_ends_at = :recurrence_ends_at,
+                reminder_days_before = :reminder_days_before
+            WHERE id = :id
+              AND user_id = :user_id
+        ");
 
-    $stmt->execute([
-        'title' => $title,
-        'event_type' => $eventType,
-        'amount' => $amount,
-        'event_date' => $eventDate,
-        'event_time' => $eventTime !== '' ? $eventTime : null,
-        'description' => $description !== '' ? $description : null,
-        'status' => $status,
-        'recurrence_type' => $recurrenceType,
-        'recurrence_interval' => $recurrenceInterval,
-        'recurrence_day_of_month' => $recurrenceDayOfMonth,
-        'recurrence_is_last_day' => $recurrenceIsLastDay,
-        'recurrence_ends_at' => $recurrenceEndsAt !== '' ? $recurrenceEndsAt : null,
-        'reminder_days_before' => $reminderDaysBefore,
-        'id' => $eventId,
-        'user_id' => $userId,
-    ]);
+        $stmt->execute([
+            'title' => $title,
+            'event_type' => $eventType,
+            'amount' => $amount,
+            'event_date' => $eventDate,
+            'event_time' => $eventTime !== '' ? $eventTime : null,
+            'description' => $description !== '' ? $description : null,
+            'status' => $status,
+            'recurrence_type' => $recurrenceType,
+            'recurrence_interval' => $recurrenceInterval,
+            'recurrence_day_of_month' => $recurrenceDayOfMonth,
+            'recurrence_is_last_day' => $recurrenceIsLastDay,
+            'recurrence_ends_at' => $recurrenceEndsAt !== '' ? $recurrenceEndsAt : null,
+            'reminder_days_before' => $reminderDaysBefore,
+            'id' => $eventId,
+            'user_id' => $userId,
+        ]);
+
+        replaceFinancialEventMonthlyRules($pdo, $eventId, $monthlyRules);
+    });
 }
 
 function deleteFinancialEvent(PDO $pdo, int $userId, int $eventId): void
@@ -377,6 +467,77 @@ function validateFinancialEventOwnership(PDO $pdo, int $eventId, int $userId): v
     }
 }
 
+function replaceFinancialEventMonthlyRules(PDO $pdo, int $eventId, array $rules): void
+{
+    $deleteStmt = $pdo->prepare("DELETE FROM financial_event_monthly_rules WHERE event_id = :event_id");
+    $deleteStmt->execute(['event_id' => $eventId]);
+
+    if ($rules === []) {
+        return;
+    }
+
+    $insertStmt = $pdo->prepare("
+        INSERT INTO financial_event_monthly_rules (event_id, month_day)
+        VALUES (:event_id, :month_day)
+    ");
+
+    foreach ($rules as $monthDay) {
+        $insertStmt->execute([
+            'event_id' => $eventId,
+            'month_day' => $monthDay,
+        ]);
+    }
+}
+
+function getFinancialEventMonthlyRulesForIds(PDO $pdo, array $eventIds): array
+{
+    $eventIds = array_values(array_unique(array_map('intval', $eventIds)));
+    if ($eventIds === []) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($eventIds), '?'));
+    $stmt = $pdo->prepare("
+        SELECT event_id, month_day
+        FROM financial_event_monthly_rules
+        WHERE event_id IN ({$placeholders})
+        ORDER BY event_id ASC, month_day ASC
+    ");
+    $stmt->execute($eventIds);
+
+    $rulesByEvent = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $rule) {
+        $rulesByEvent[(int) $rule['event_id']][] = (int) $rule['month_day'];
+    }
+
+    return $rulesByEvent;
+}
+
+function applyFinancialEventMonthlyRules(array $event, array $storedRules): array
+{
+    if (($event['recurrence_type'] ?? 'none') !== 'monthly') {
+        $event['monthly_rule_days'] = [];
+        $event['recurrence_month_days'] = '';
+
+        return $event;
+    }
+
+    if ($storedRules === []) {
+        if (!empty($event['recurrence_is_last_day'])) {
+            $storedRules[] = 0;
+        } else {
+            $storedRules[] = (int) ($event['recurrence_day_of_month'] ?: date('j', strtotime($event['event_date'])));
+        }
+    }
+
+    $fixedDays = array_values(array_filter($storedRules, static fn (int $day): bool => $day > 0));
+    $event['monthly_rule_days'] = $storedRules;
+    $event['recurrence_month_days'] = implode(', ', $fixedDays);
+    $event['recurrence_is_last_day'] = in_array(0, $storedRules, true) ? 1 : 0;
+
+    return $event;
+}
+
 function getFinancialEvent(PDO $pdo, int $userId, int $eventId): ?array
 {
     $stmt = $pdo->prepare("
@@ -392,6 +553,10 @@ function getFinancialEvent(PDO $pdo, int $userId, int $eventId): ?array
     ]);
 
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($event) {
+        $rulesByEvent = getFinancialEventMonthlyRulesForIds($pdo, [$eventId]);
+        $event = applyFinancialEventMonthlyRules($event, $rulesByEvent[$eventId] ?? []);
+    }
 
     return $event ?: null;
 }
@@ -412,9 +577,17 @@ function getFinancialEventsForRange(PDO $pdo, int $userId, string $startDate, st
         'end_date' => $endDate,
     ]);
 
+    $financialEvents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $monthlyEventIds = array_column(array_filter(
+        $financialEvents,
+        static fn (array $event): bool => $event['recurrence_type'] === 'monthly'
+    ), 'id');
+    $monthlyRulesByEvent = getFinancialEventMonthlyRulesForIds($pdo, $monthlyEventIds);
     $storedOccurrences = getStoredFinancialEventOccurrences($pdo, $userId, $startDate, $endDate);
     $events = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $event) {
+    foreach ($financialEvents as $event) {
+        $eventId = (int) $event['id'];
+        $event = applyFinancialEventMonthlyRules($event, $monthlyRulesByEvent[$eventId] ?? []);
         foreach (expandFinancialEventOccurrences($event, $startDate, $endDate) as $occurrence) {
             $key = $occurrence['id'] . ':' . $occurrence['occurrence_date'];
             $events[] = applyStoredFinancialEventOccurrence($occurrence, $storedOccurrences[$key] ?? null);
@@ -489,6 +662,10 @@ function expandFinancialEventOccurrences(array $event, string $startDate, string
     $limit = $recurrenceEnd < $end ? $recurrenceEnd : $end;
     $recurrenceType = $event['recurrence_type'] ?? 'none';
 
+    if ($recurrenceType === 'monthly') {
+        return expandFinancialEventMonthlyOccurrences($event, $start, $limit);
+    }
+
     while ($current <= $limit) {
         if ($current >= $start) {
             $occurrences[] = financialEventOccurrenceFromEvent($event, $current);
@@ -507,6 +684,50 @@ function expandFinancialEventOccurrences(array $event, string $startDate, string
     }
 
     return $occurrences;
+}
+
+function expandFinancialEventMonthlyOccurrences(
+    array $event,
+    DateTimeImmutable $start,
+    DateTimeImmutable $limit
+): array {
+    $anchor = new DateTimeImmutable($event['event_date']);
+    $monthCursor = $anchor->modify('first day of this month');
+    $interval = max(1, (int) ($event['recurrence_interval'] ?? 1));
+    $rules = $event['monthly_rule_days'] ?? [];
+
+    if ($rules === []) {
+        $rules = !empty($event['recurrence_is_last_day'])
+            ? [0]
+            : [(int) ($event['recurrence_day_of_month'] ?: $anchor->format('j'))];
+    }
+
+    $occurrencesByDate = [];
+    while ($monthCursor <= $limit) {
+        $daysInMonth = (int) $monthCursor->format('t');
+
+        foreach ($rules as $ruleDay) {
+            $day = (int) $ruleDay === 0 ? $daysInMonth : min((int) $ruleDay, $daysInMonth);
+            $occurrenceDate = $monthCursor->setDate(
+                (int) $monthCursor->format('Y'),
+                (int) $monthCursor->format('m'),
+                $day
+            );
+
+            if ($occurrenceDate < $anchor || $occurrenceDate < $start || $occurrenceDate > $limit) {
+                continue;
+            }
+
+            $dateKey = $occurrenceDate->format('Y-m-d');
+            $occurrencesByDate[$dateKey] = financialEventOccurrenceFromEvent($event, $occurrenceDate);
+        }
+
+        $monthCursor = $monthCursor->modify("first day of +{$interval} month");
+    }
+
+    ksort($occurrencesByDate);
+
+    return array_values($occurrencesByDate);
 }
 
 function nextFinancialEventOccurrenceDate(array $event, DateTimeImmutable $current): DateTimeImmutable
@@ -761,7 +982,9 @@ function getFinancialEventForUpdate(PDO $pdo, int $userId, int $eventId): array
         throw new RuntimeException('Evento no encontrado o no autorizado.');
     }
 
-    return $event;
+    $rulesByEvent = getFinancialEventMonthlyRulesForIds($pdo, [$eventId]);
+
+    return applyFinancialEventMonthlyRules($event, $rulesByEvent[$eventId] ?? []);
 }
 
 function validateFinancialEventOccurrenceDate(array $event, string $occurrenceDate): void

@@ -81,7 +81,7 @@ if (!file_exists($envFile)) {
                 $ok = false;
             }
 
-            foreach (['financial_events', 'financial_event_occurrences'] as $table) {
+            foreach (['financial_events', 'financial_event_monthly_rules', 'financial_event_occurrences'] as $table) {
                 $stmt = $pdo->query("SHOW TABLES LIKE " . $pdo->quote($table));
                 if ($stmt->fetchColumn()) {
                     echo " -> Tabla {$table}: OK\n";
