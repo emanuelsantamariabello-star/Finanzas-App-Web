@@ -14,7 +14,7 @@ Además de resolver una necesidad real, el proyecto fue diseñado para aplicar b
 
 Versión actual: **v1.2**
 
-La versión **v1.2** incorpora registro e inicio de sesión con Google, manteniendo contraseña local de seguridad para cambios críticos, conservando el flujo tradicional de acceso y ajustando la experiencia visual del botón de Google para modo oscuro.
+La versión **v1.2** incorpora registro e inicio de sesión con Google, manteniendo contraseña local de seguridad para cambios críticos, conservando el flujo tradicional de acceso y ajustando la experiencia visual del botón de Google para modo oscuro sin modificar el flujo seguro de autenticación.
 
 ---
 

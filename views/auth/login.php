@@ -91,6 +91,10 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
                 <div class="google-auth-button d-flex justify-content-center">
+                    <div class="google-auth-visual">
+                        <span class="google-auth-icon">G</span>
+                        <span>Acceder con Google</span>
+                    </div>
                     <div id="googleLoginButton"></div>
                 </div>
                 <?php endif; ?>

@@ -97,6 +97,10 @@ $googleClientId = trim((string) ($_ENV['GOOGLE_CLIENT_ID'] ?? ''));
           </div>
 
           <div class="google-auth-button d-flex justify-content-center">
+            <div class="google-auth-visual">
+              <span class="google-auth-icon">G</span>
+              <span>Continuar con Google</span>
+            </div>
             <div id="googleRegisterButton"></div>
           </div>
         <?php endif; ?>
