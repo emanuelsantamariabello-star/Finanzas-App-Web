@@ -190,7 +190,7 @@ function renderGoogleRegisterButton(attempts = 0) {
     const credentialInput = document.getElementById('google_register_credential');
     const modalElement = document.getElementById('googlePasswordModal');
     const googleButtonTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark'
-        ? 'filled_black'
+        ? 'filled_blue'
         : 'outline';
 
     if (!button || !credentialInput || !modalElement) {

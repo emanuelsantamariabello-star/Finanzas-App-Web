@@ -122,7 +122,7 @@ function renderGoogleLoginButton(attempts = 0) {
     const form = document.getElementById('googleLoginForm');
     const credentialInput = document.getElementById('google_login_credential');
     const googleButtonTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark'
-        ? 'filled_black'
+        ? 'filled_blue'
         : 'outline';
 
     if (!button || !form || !credentialInput) {
