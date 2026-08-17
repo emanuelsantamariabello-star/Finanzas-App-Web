@@ -6,6 +6,9 @@
     #RewriteCond %{HTTPS} !=on
     #RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+    # Endpoints públicos controlados para la conexión OAuth de Google Calendar
+    RewriteRule ^routes/google_calendar_(connect|callback|disconnect|sync)\.php$ - [L]
+
     # Evitar acceso directo a directorios sensibles
     RewriteRule ^(app|vendor|logs|database|routes|\.git)($|/) - [F,L]
 

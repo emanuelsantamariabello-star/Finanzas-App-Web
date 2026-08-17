@@ -34,6 +34,17 @@ $_ENV['APP_TIMEZONE'] = 'America/Bogota';
 // Client ID publico creado en Google Cloud para este dominio/origen.
 $_ENV['GOOGLE_CLIENT_ID'] = '';
 
+// Preparacion para Google Calendar (OAuth 2.0 de servidor web)
+// Estas credenciales son independientes del ID Token usado por Google Sign-In.
+$_ENV['GOOGLE_CALENDAR_CLIENT_ID'] = '';
+$_ENV['GOOGLE_CALENDAR_CLIENT_SECRET'] = '';
+$_ENV['GOOGLE_CALENDAR_REDIRECT_URI'] = '';
+$_ENV['GOOGLE_CALENDAR_SCOPE'] = 'https://www.googleapis.com/auth/calendar.events';
+
+// Clave Base64 de 32 bytes para cifrar tokens OAuth en la base de datos.
+// Generar una vez por ambiente y conservarla fuera de Git.
+$_ENV['OAUTH_TOKEN_ENCRYPTION_KEY'] = '';
+
 // Usuarios administradores separados por coma.
 // Deben ser IDs existentes de la tabla users.
 $_ENV['ADMIN_USER_IDS'] = '1';
