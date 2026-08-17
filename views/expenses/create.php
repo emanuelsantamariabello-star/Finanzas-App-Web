@@ -96,7 +96,7 @@ include dirname(__DIR__) . '/layouts/header.php';
         </div>
     </div>
 
-        <div class="d-flex justify-content-between mt-4">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between gap-2 mt-4">
                 <a href="<?= EXPENSES_PATH ?>?income_id=<?= $income_id ?>"
                 class="btn btn-outline-secondary">
                  ⬅️ Cancelar
