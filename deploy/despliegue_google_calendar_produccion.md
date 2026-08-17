@@ -26,7 +26,15 @@ El paquete no contiene `.env.php` y no debe reemplazarse durante la extracción.
 
 ## Migraciones y orden
 
-Ejecutar únicamente las migraciones que todavía no existan en producción y respetar este orden:
+La opción recomendada para phpMyAdmin es importar un solo archivo:
+
+```text
+database/releases/2026_08_17_calendario_google_produccion.sql
+```
+
+Este archivo consolida las migraciones en el orden correcto.
+
+Como alternativa, ejecutar únicamente las migraciones que todavía no existan en producción y respetar este orden:
 
 ```text
 1. database/migrations/2026_08_16_create_financial_events.sql
